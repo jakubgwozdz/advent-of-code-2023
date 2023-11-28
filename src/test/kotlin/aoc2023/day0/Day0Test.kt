@@ -11,6 +11,7 @@ class Day0Test {
 
     @Test
     @Timeout(1)
+    @Ignore
     fun parseTest() {
         expect(testInput) {
             parse(
@@ -23,6 +24,7 @@ class Day0Test {
 
     @Test
     @Timeout(5)
+    @Ignore
     fun part1test() {
         expect(226) { part1(testInput) }
     }

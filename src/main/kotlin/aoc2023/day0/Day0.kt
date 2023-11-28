@@ -1,13 +1,11 @@
 package aoc2023.day0
 
 import aoc2023.Puzzle
-import aoc2023.execute
 import aoc2023.getDay
 import aoc2023.readAndParse
 
 fun main() {
-    val day = getDay {}
-    val input = readAndParse("local/${day}_input.txt", ::parse)
+    val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
     puzzle.part1()
     puzzle.part2()

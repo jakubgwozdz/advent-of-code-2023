@@ -12,3 +12,7 @@ session=5361......bb4c6
 ```bash
 DAY=`date "+%-d"` ; curl -v -b `cat local/cookie` https://adventofcode.com/2023/day/${DAY}/input -o local/day${DAY}_input.txt
 ```
+- a bit earlier run (to create kt files from template)
+```bash
+./make.my.day.main.kts [day]
+```
