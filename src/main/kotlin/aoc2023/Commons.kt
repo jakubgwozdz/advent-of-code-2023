@@ -1,8 +1,16 @@
 package aoc2023
 
+import java.io.File
+import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
-fun calculate(part: () -> Any) {
+fun execute(desc: String, part: () -> Any?): Duration {
     val t = measureTimedValue(part)
-    println("$part took ${t.duration} and gave result: ${t.value}")
+    println("$desc took ${t.duration} and resulted with: ${t.value}")
+    return t.duration
 }
+
+fun getDay(function: () -> Any?) = "day\\d+".toRegex().find(function.javaClass.name)?.value
+
+fun <T> readAndParse(filename: String, parseOp: (String) -> T) = File(filename).readText().trim().let(parseOp)
+
