@@ -11,16 +11,18 @@ fun main() {
     puzzle.part2()
 }
 
-data class Input(val todo: Int)
+//data class Input(val todo: Int)
+typealias Input = List<String>
 
 fun parse(inputStr: String): Input {
-    return Input("Damage: (\\d+)".toRegex().find(inputStr)?.destructured?.component1()?.toInt()!!)
-//    TODO("parse ${inputStr.length} data")
+//    return inputStr.lines().filterNot { it.isBlank() }
+//    return Input("Damage: (\\d+)".toRegex().find(inputStr)?.destructured?.component1()?.toInt()!!)
+    TODO("parse ${inputStr.length} data")
 
 }
 
 fun part1(input: Input): Any? = input.toString() // TODO("part 1 with ${input.toString().length} data")
 
-fun part2(input: Input): Any? = input.todo //TODO("part 2 with ${input.toString().length} data")
+fun part2(input: Input): Any? = TODO("part 2 with ${input.toString().length} data")
 
 

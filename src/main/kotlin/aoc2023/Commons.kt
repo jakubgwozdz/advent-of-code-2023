@@ -14,3 +14,6 @@ fun getDay(function: () -> Any?) = "day\\d+".toRegex().find(function.javaClass.n
 
 fun <T> readAndParse(filename: String, parseOp: (String) -> T) = File(filename).readText().trim().let(parseOp)
 
+fun <T> String.tryMatch(regex: Regex, op: (MatchResult.Destructured) -> T) =
+    regex.matchEntire(this)?.destructured?.let(op)
+

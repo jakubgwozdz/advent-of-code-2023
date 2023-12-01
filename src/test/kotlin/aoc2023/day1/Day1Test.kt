@@ -1,14 +1,13 @@
-package aoc2023.day0
+package aoc2023.day1
 
 import org.junit.jupiter.api.Timeout
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 
-class Day0Test {
+class Day1Test {
 
-//    val testInput = Input(42)
-    val testInput = listOf("42")
+    val testInput = listOf("1abc2","pqr3stu8vwx","a1b2c3d4e5f","treb7uchet")
 
     @Test
     @Timeout(1)
@@ -17,7 +16,10 @@ class Day0Test {
         expect(testInput) {
             parse(
                 """
-                    42
+                    1abc2
+                    pqr3stu8vwx
+                    a1b2c3d4e5f
+                    treb7uchet
                 """.trimIndent()
             )
         }
@@ -27,14 +29,14 @@ class Day0Test {
     @Timeout(5)
     @Ignore
     fun part1test() {
-        expect(226) { part1(testInput) }
+        expect(142) { part1(testInput) }
     }
 
     @Test
     @Timeout(5)
     @Ignore
     fun part2test() {
-        expect(3) { part2(testInput) }
+        expect(281) { part2(testInput) }
     }
 
 }
