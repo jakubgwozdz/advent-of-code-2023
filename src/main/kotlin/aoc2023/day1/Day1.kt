@@ -28,19 +28,18 @@ private fun String.part2calibration(): Int {
     return l1 * 10 + l2
 }
 
-private fun String.betterToDigitOrNull(startIndex: Int): Int? = when {
-    this[startIndex].isDigit() -> this[startIndex].digitToInt()
-    startsWith("zero", startIndex) -> 0
-    startsWith("one", startIndex) -> 1
-    startsWith("two", startIndex) -> 2
-    startsWith("three", startIndex) -> 3
-    startsWith("four", startIndex) -> 4
-    startsWith("five", startIndex) -> 5
-    startsWith("six", startIndex) -> 6
-    startsWith("seven", startIndex) -> 7
-    startsWith("eight", startIndex) -> 8
-    startsWith("nine", startIndex) -> 9
-    else -> null
-}
+private fun String.betterToDigitOrNull(startIndex: Int): Int? =
+    if (this[startIndex].isDigit()) this[startIndex].digitToInt()
+    else digitNames.firstNotNullOfOrNull { (d, name) -> if (startsWith(name, startIndex)) d else null }
 
-
+val digitNames = listOf(
+    1 to "one",
+    2 to "two",
+    3 to "three",
+    4 to "four",
+    5 to "five",
+    6 to "six",
+    7 to "seven",
+    8 to "eight",
+    9 to "nine",
+)
