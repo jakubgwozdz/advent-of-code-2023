@@ -54,7 +54,7 @@ class Day2Format : StringFormat {
         override fun decodeSequentially() = true
         override fun decodeValue() = fields.first
         override fun beginStructure(descriptor: SerialDescriptor) =
-            if (descriptor == gameSetListDescriptor) GameSetListDecoder(fields.second) else error("unused")
+            if (descriptor == gameSetListDescriptor) GameSetListDecoder(fields.second) else this
     }
 
     // decodes strings like "3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"
@@ -106,5 +106,7 @@ fun main() {
     Day2Format().decodeFromString<List<GameSet>>("3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
         .also { println(Json.encodeToString(it)) }
     Day2Format().decodeFromString<Game>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
+        .also { println(Json.encodeToString(it)) }
+    Day2Format().decodeFromString<Input>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
         .also { println(Json.encodeToString(it)) }
 }
