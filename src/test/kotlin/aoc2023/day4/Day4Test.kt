@@ -1,7 +1,6 @@
 package aoc2023.day4
 
 import org.junit.jupiter.api.Timeout
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 

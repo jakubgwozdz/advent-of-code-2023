@@ -11,23 +11,38 @@ fun main() {
     puzzle.part2()
 }
 
-data class Card(val winning: Set<Int>, val mine: Set<Int>)
-typealias Input = List<Card>
-
 fun parse(inputStr: String) = inputStr.lines().filterNot { it.isBlank() }.map { line ->
     fun String.ints() = split(" ").filterNot { it.isBlank() }.map { it.toInt() }
     val (_, winStr, myStr) = line.split(":", "|")
     Card(winStr.ints().toSet(), myStr.ints().toSet())
 }
 
+data class Card(val winning: Set<Int>, val mine: Set<Int>)
+typealias Input = List<Card>
+
 private fun Card.matchCount() = mine.intersect(winning).size
 
-fun part1(input: Input) = input.sumOf { card -> card.matchCount().let { 1.shl(it - 1) } }
+fun part1(input: Input) = input
+    .map { card -> card.matchCount() }
+    .sumOf { if (it >= 0) 1.shl(it - 1) else 0 }
 
-fun part2(input: Input): Int {
-    val counts = IntArray(input.size) { 1 }
-    input.forEachIndexed { index, card ->
-        repeat(card.matchCount()) { counts[index + 1 + it] += counts[index] }
+data class Acc(
+    val sum: Int,
+    val state: List<Int>, // *copies* won so far (excl. original)
+)
+
+fun part2(input: Input) = input
+    .map { card -> card.matchCount() }
+    .fold(Acc(0, emptyList()), ::part2round)
+    .sum
+
+fun part2round(acc: Acc, matches: Int): Acc {
+    val count = (acc.state.firstOrNull() ?: 0) + 1
+    val tail = acc.state.drop(1)
+    val newState = List(tail.size.coerceAtLeast(matches)) {
+        val prev = if (it < tail.size) tail[it] else 0
+        val new = if (it < matches) count else 0
+        prev + new
     }
-    return counts.sum()
+    return Acc(acc.sum + count, newState)
 }
