@@ -1,12 +1,14 @@
-//pluginManagement {
-//    repositories {
-//        mavenCentral()
-//        gradlePluginPortal()
-//    }
-//}
-//
-//plugins {
-//    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
-//}
+pluginManagement {
+    repositories {
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+        maven("https://maven.pkg.jetbrains.space/public/p/amper/amper")
+    }
+}
+
+plugins {
+    id("org.jetbrains.amper.settings.plugin").version("0.1.0")
+}
 
 rootProject.name = "advent-of-code-2023"
