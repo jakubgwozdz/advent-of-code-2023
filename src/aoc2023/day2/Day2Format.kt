@@ -101,12 +101,12 @@ data class GameSet(val red: Int = 0, val green: Int = 0, val blue: Int = 0)
 
 fun parse(inputStr: String): Input = Day2Format().decodeFromString(inputStr)
 
-fun main() {
-    Day2Format().decodeFromString<GameSet>("3 blue, 4 red").also { println(Json.encodeToString(it)) }
-    Day2Format().decodeFromString<List<GameSet>>("3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
-        .also { println(Json.encodeToString(it)) }
-    Day2Format().decodeFromString<Game>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
-        .also { println(Json.encodeToString(it)) }
-    Day2Format().decodeFromString<Input>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
-        .also { println(Json.encodeToString(it)) }
-}
+//fun main() {
+//    Day2Format().decodeFromString<GameSet>("3 blue, 4 red").also { println(Json.encodeToString(it)) }
+//    Day2Format().decodeFromString<List<GameSet>>("3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
+//        .also { println(Json.encodeToString(it)) }
+//    Day2Format().decodeFromString<Game>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
+//        .also { println(Json.encodeToString(it)) }
+//    Day2Format().decodeFromString<Input>("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green")
+//        .also { println(Json.encodeToString(it)) }
+//}

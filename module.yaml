@@ -1,9 +1,5 @@
 product: jvm/app
-module:
-  layout: gradle-jvm
 settings:
   kotlin:
     serialization: json
   junit: junit-5
-  jvm:
-    mainClass: aoc2023.day4.Day4Kt
