@@ -24,3 +24,9 @@ fun <T> readAndParse(filename: String, parseOp: (String) -> T) = File(filename).
 fun <T> String.tryMatch(regex: Regex, op: (MatchResult.Destructured) -> T) =
     regex.matchEntire(this)?.destructured?.let(op)
 
+inline fun <T:Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
+    prefixOp().toString().let { if (it.isNotEmpty()) println("$it: $v") else println(v) }
+}
+
+fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
+fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)

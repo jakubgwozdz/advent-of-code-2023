@@ -7,9 +7,6 @@ import kotlin.test.expect
 
 class Day5Test {
 
-    //    val testInput = Input(42)
-    val testInput: Input? = null
-
     val testInputStr = """
         seeds: 79 14 55 13
 
