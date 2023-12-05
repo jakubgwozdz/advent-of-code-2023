@@ -8,32 +8,61 @@ import kotlin.test.expect
 class Day5Test {
 
     //    val testInput = Input(42)
-    val testInput = listOf("42")
+    val testInput: Input? = null
 
     val testInputStr = """
-        42
-    """.trimIndent()
+        seeds: 79 14 55 13
 
+        seed-to-soil map:
+        50 98 2
+        52 50 48
+
+        soil-to-fertilizer map:
+        0 15 37
+        37 52 2
+        39 0 15
+
+        fertilizer-to-water map:
+        49 53 8
+        0 11 42
+        42 0 7
+        57 7 4
+
+        water-to-light map:
+        88 18 7
+        18 25 70
+
+        light-to-temperature map:
+        45 77 23
+        81 45 19
+        68 64 13
+
+        temperature-to-humidity map:
+        0 69 1
+        1 0 69
+
+        humidity-to-location map:
+        60 56 37
+        56 93 4
+    """.trimIndent()
 
     @Test
     @Timeout(1)
     @Ignore
     fun parseTest() {
-        expect(testInput) { parse(testInputStr) }
+        parse(testInputStr).also(::println)
     }
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part1test() {
-        expect(226) { part1(parse(testInputStr)) }
+        expect(35L) { part1(parse(testInputStr)) }
     }
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part2test() {
-        expect(3) { part2(parse(testInputStr)) }
+        expect(46L) { part2(parse(testInputStr)) }
     }
 
 }

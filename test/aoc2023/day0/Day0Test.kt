@@ -7,8 +7,7 @@ import kotlin.test.expect
 
 class Day0Test {
 
-    //    val testInput = Input(42)
-    val testInput = listOf("42")
+    val testInput: Input? = null
 
     val testInputStr = """
         42
