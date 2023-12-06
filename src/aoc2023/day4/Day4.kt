@@ -2,6 +2,7 @@ package aoc2023.day4
 
 import aoc2023.Puzzle
 import aoc2023.getDay
+import aoc2023.ints
 import aoc2023.readAndParse
 
 fun main() {
@@ -12,7 +13,6 @@ fun main() {
 }
 
 fun parse(inputStr: String) = inputStr.lines().filterNot { it.isBlank() }.map { line ->
-    fun String.ints() = split(" ").filterNot { it.isBlank() }.map { it.toInt() }
     val (_, winStr, myStr) = line.split(":", "|")
     Card(winStr.ints().toSet(), myStr.ints().toSet())
 }

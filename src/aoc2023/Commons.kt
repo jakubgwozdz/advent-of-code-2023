@@ -30,3 +30,6 @@ inline fun <T:Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
 
 fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
 fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)
+
+fun String.ints() = split(" ").filterNot { it.isBlank() }.map { it.toInt() }
+fun String.longs() = split(" ").filterNot { it.isBlank() }.map { it.toLong() }
