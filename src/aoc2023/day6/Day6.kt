@@ -5,6 +5,7 @@ import aoc2023.getDay
 import aoc2023.logged
 import aoc2023.longs
 import aoc2023.readAndParse
+import kotlin.math.ceil
 import kotlin.math.sqrt
 
 fun main() {
@@ -22,11 +23,9 @@ fun parse(inputStr: String) = inputStr.lines()
 
 fun calc(t: Long, d: Long): Long = t - 2 * firstBetter(t, d) + 1
 
-private fun firstBetter(t: Long, d: Long): Long {
-    var i = d/t
-    while ((t - i) * i <= d) i++
-    return i
-}
+fun firstBetter(t: Long, d: Long) = (t - (t * t - 4 * d).ceilSqrt()) / 2 + 1
+
+fun Long.ceilSqrt() = ceil(sqrt(toDouble())).toLong()
 
 private fun part1Races(input: Input) = input.time.longs().zip(input.distance.longs())
 private fun part2Races(input: Input) =
