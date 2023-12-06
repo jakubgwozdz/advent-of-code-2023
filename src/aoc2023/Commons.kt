@@ -31,5 +31,25 @@ inline fun <T:Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
 fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
 fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)
 
-fun String.ints() = split(" ").filterNot { it.isBlank() }.map { it.toInt() }
-fun String.longs() = split(" ").filterNot { it.isBlank() }.map { it.toLong() }
+fun String.ints() = split(" ").filterNot(String::isBlank).map(String::toInt)
+fun String.longs() = split(" ").filterNot(String::isBlank).map(String::toLong)
+
+// inspired by pseudocode at https://rosettacode.org/wiki/Isqrt_(integer_square_root)_of_X
+fun Long.isqrt(ceil:Boolean = false): Long {
+    require(this >= 0)
+    var q = 1L
+    while (q <= this) q = q shl 2
+    var z = this
+    var r = 0L
+    while (q > 1L) {
+        q = q shr 2
+        val t = z - r - q
+        r = r shr 1
+        if (t >= 0) {
+            z = t
+            r += q
+        }
+    }
+    return if (!ceil || z == 0L) r else r + 1
+}
+
