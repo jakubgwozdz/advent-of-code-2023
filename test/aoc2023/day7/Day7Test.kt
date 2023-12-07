@@ -7,7 +7,7 @@ import kotlin.test.expect
 
 class Day7Test {
 
-    val testInput: Input? = null
+    val testInput: List<Pair<String, Int>>? = null
 
     val testInputStr = """
         32T3K 765
