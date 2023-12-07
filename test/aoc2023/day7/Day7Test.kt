@@ -7,8 +7,6 @@ import kotlin.test.expect
 
 class Day7Test {
 
-    val testInput: List<Pair<String, Int>>? = null
-
     val testInputStr = """
         32T3K 765
         T55J5 684
@@ -17,13 +15,6 @@ class Day7Test {
         QQQJA 483
     """.trimIndent()
 
-
-    @Test
-    @Timeout(1)
-    @Ignore
-    fun parseTest() {
-        expect(testInput) { parse(testInputStr) }
-    }
 
     @Test
     @Timeout(5)

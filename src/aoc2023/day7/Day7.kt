@@ -11,40 +11,38 @@ fun main() {
     puzzle.part2()
 }
 
-fun parse(inputStr: String): List<Pair<String, Int>> =
-    inputStr.lines().filterNot { it.isBlank() }
-        .map { it.split(" ") }
-        .map { (a, b) -> a to b.toInt() }
+fun parse(inputStr: String) = inputStr.lines().filterNot { it.isBlank() }
+    .map { it.split(" ") }
+    .map { (a, b) -> a to b.toInt() }
 
 const val order = "_j23456789TJQKA"
 
 data class Hand(val type: Int, val kinds: List<Int>) : Comparable<Hand> {
-    override fun compareTo(other: Hand): Int {
-        if (type == other.type)
-            kinds.zip(other.kinds).forEach { (a, b) -> a.compareTo(b).let { if (it != 0) return it } }
-        return type.compareTo(other.type)
-    }
+    val value = kinds.fold(type) {acc, i -> acc * order.length + i }
+    override fun compareTo(other: Hand): Int = value.compareTo(other.value)
 }
 
-fun String.toHand(): Hand {
-    val counts = groupBy { it }.map { (_, v) -> v.size }.sortedDescending()
-    val type = counts[0]*10+counts.getOrElse(1) { 0 }
-    val kinds = map { order.indexOf(it) }
+fun normalHand(cards: String): Hand {
+    val counts = cards.groupBy { it }.map { (_, v) -> v.size }.sortedDescending()
+    val type = counts[0] * 10 + counts.getOrElse(1) { 0 }
+    val kinds = cards.map(order::indexOf)
     return Hand(type, kinds)
 }
 
-fun String.toHandWithJokers(): Hand {
-    if ('J' !in this) return toHand()
-    val bestType = "234567890TQKA".maxOf { replace('J', it).toHand() }.type
-    val kinds = replace('J', 'j').map { order.indexOf(it) }
+fun jokeHand(cards: String): Hand {
+    if ('J' !in cards) return normalHand(cards)
+    val bestType = "234567890TQKA".maxOf { normalHand(cards.replace('J', it)) }.type
+    val kinds = cards.replace('J', 'j').map(order::indexOf)
     return Hand(bestType, kinds)
 }
 
-fun List<Pair<String, Int>>.solve(op: (String) -> Hand) = map { op(it.first) to it.second }
+typealias Input = List<Pair<String, Int>>
+
+fun Input.solve(op: (String) -> Hand) = map { op(it.first) to it.second }
     .sortedBy { it.first }
     .map { it.second }
     .mapIndexed { index, bid -> (index + 1) * bid }
     .sum()
 
-fun part1(input: List<Pair<String, Int>>) = input.solve(String::toHand)
-fun part2(input: List<Pair<String, Int>>) = input.solve(String::toHandWithJokers)
+fun part1(input: Input) = input.solve(::normalHand)
+fun part2(input: Input) = input.solve(::jokeHand)
