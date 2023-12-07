@@ -3,7 +3,6 @@ package aoc2023.day7
 import aoc2023.Puzzle
 import aoc2023.day7.Type.*
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
 
 fun main() {
@@ -13,16 +12,14 @@ fun main() {
     puzzle.part2()
 }
 
-// 247047014 too high
-typealias Input = List<Pair<Hand, Int>>
+typealias Input = List<Pair<String, Int>>
 
 fun parse(inputStr: String): Input =
-    inputStr.lines().filterNot { it.isBlank() }.map { it.split(" ") }.map { (a, b) -> a.toHand() to b.toInt() }
+    inputStr.lines().filterNot { it.isBlank() }.map { it.split(" ") }.map { (a, b) -> a to b.toInt() }
 
-val order = "**23456789TJQKA"
-private fun Int.of(kind: Int) = order[kind].toString().repeat(this)
-enum class Type(val power: Int = 0) { FiveOfA, FourOfA, FullHouse, ThreeOfA, TwoPair, OnePair, HighCard }
+val order = "_j23456789TJQKA"
 
+enum class Type { FiveOfA, FourOfA, FullHouse, ThreeOfA, TwoPair, OnePair, HighCard }
 data class Hand(val type: Type, val kinds: List<Int>) : Comparable<Hand> {
     override fun compareTo(other: Hand): Int {
         type.ordinal.compareTo(other.type.ordinal).let { if (it != 0) return -it }
@@ -30,49 +27,42 @@ data class Hand(val type: Type, val kinds: List<Int>) : Comparable<Hand> {
         return 0
     }
 
-    override fun toString(): String = toString2()//
-
-    fun toString1() = type.name + " " + kinds.joinToString("") { 1.of(it) }
-
-    fun toString2(): String = when (type) {
-        FiveOfA -> kinds.joinToString(" ") { 5.of(it) }
-        FourOfA -> kinds.let { (a, b) -> "${4.of(a)} ${1.of(b)}" }
-        FullHouse -> kinds.let { (a, b) -> "${3.of(a)} ${2.of(b)}" }
-        ThreeOfA -> kinds.let { (a, b, c) -> "${3.of(a)} ${1.of(b)} ${1.of(c)}" }
-        TwoPair -> kinds.let { (a, b, c) -> "${2.of(a)} ${2.of(b)} ${1.of(c)}" }
-        OnePair -> 2.of(kinds.first()) + " " + kinds.drop(1).joinToString(" ") { 1.of(it) }
-        HighCard -> kinds.joinToString(" ") { 1.of(it) }
-    }
-
+    fun cards() = kinds.joinToString("") { order[it].toString() }
 }
 
 fun String.toHand(): Hand {
-    val g = map { order.indexOf(it) }.onEach { check(it in 2..14) { "$it on `$this`" } }
-        .groupBy { it }.mapValues { (_, v) -> v.size }.toList()
-        .sortedWith(compareBy(Pair<Int, Int>::second, Pair<Int, Int>::first)).reversed()
-    check(g.sumOf { it.second } == 5) { "`$this` parsed to $g and doesn't sum up" }
-    g.windowed(2)
-        .forEach { (a, b) -> check(a.second > b.second || a.second == b.second && a.first > b.first) { "failed sorting $g on $a vs $b" } }
-    val t1 = g.size
-    val t2 = g[0].second
-    val kinds = g.map { it.first }
-
-    return when {
-        t1 == 1 && t2 == 5 -> Hand(FiveOfA, kinds)
-        t1 == 2 && t2 == 4 -> Hand(FourOfA, kinds)
-        t1 == 2 && t2 == 3 -> Hand(FullHouse, kinds)
-        t1 == 3 && t2 == 3 -> Hand(ThreeOfA, kinds)
-        t1 == 3 && t2 == 2 -> Hand(TwoPair, kinds)
-        t1 == 4 && t2 == 2 -> Hand(OnePair, kinds)
-        t1 == 5 && t2 == 1 -> Hand(HighCard, kinds)
-        else -> error("what to do with `$this` that parsed to $g ???")
-    }.logged { this }
+    val counts = groupBy { it }.map { (_, v) -> v.size }
+    val type = when (counts.size to counts.max()) {
+        1 to 5 -> FiveOfA
+        2 to 4 -> FourOfA
+        2 to 3 -> FullHouse
+        3 to 3 -> ThreeOfA
+        3 to 2 -> TwoPair
+        4 to 2 -> OnePair
+        5 to 1 -> HighCard
+        else -> error("`$this` parsed to $counts")
+    }
+    val kinds = map { order.indexOf(it) }
+    return Hand(type, kinds)
 }
 
-fun part1(input: Input) = input.sortedBy { it.first }
-    .mapIndexed { index, (hand, bid) -> Triple(index + 1, hand, bid).logged() }
+fun String.toHandWithJokers(): Hand {
+    if ('J' !in this) return toHand()
+    val cards = replace('J', 'j')
+    val bestType = "234567890TQKA".maxOf { cards.replace('j', it).toHand() }.type
+    val kinds = cards.map { order.indexOf(it) }
+    return Hand(bestType, kinds)
+}
+
+fun part1(input: Input) = input
+    .map { (str, bid) -> str.toHand() to bid }
+    .sortedBy { it.first }
+    .mapIndexed { index, (hand, bid) -> Triple(index + 1, hand, bid) }
     .sumOf { (rank, hand, bid) -> rank * bid }
 
-fun part2(input: Input): Any? = TODO("part 2 with ${input.toString().length} data")
-
+fun part2(input: Input) = input
+    .map { (str, bid) -> str.toHandWithJokers() to bid }
+    .sortedBy { it.first }
+    .mapIndexed { index, (hand, bid) -> Triple(index + 1, hand, bid) }
+    .sumOf { (rank, hand, bid) -> rank * bid }
 

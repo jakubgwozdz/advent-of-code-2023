@@ -33,9 +33,8 @@ class Day7Test {
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part2test() {
-        expect(3) { part2(parse(testInputStr)) }
+        expect(5905) { part2(parse(testInputStr)) }
     }
 
 }
