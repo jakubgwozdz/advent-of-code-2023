@@ -1,6 +1,7 @@
 package aoc2023.day7
 
 import aoc2023.Puzzle
+import aoc2023.day7.Type.*
 import aoc2023.getDay
 import aoc2023.logged
 import aoc2023.readAndParse
@@ -20,79 +21,29 @@ fun parse(inputStr: String): Input =
 
 val order = "**23456789TJQKA"
 private fun Int.of(kind: Int) = order[kind].toString().repeat(this)
+enum class Type(val power: Int = 0) { FiveOfA, FourOfA, FullHouse, ThreeOfA, TwoPair, OnePair, HighCard }
 
-sealed interface Hand : Comparable<Hand>
-data class FiveOfA(val kind: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> kind.compareTo(other.kind)
-        else -> 1
+data class Hand(val type: Type, val kinds: List<Int>) : Comparable<Hand> {
+    override fun compareTo(other: Hand): Int {
+        type.ordinal.compareTo(other.type.ordinal).let { if (it != 0) return -it }
+        kinds.zip(other.kinds).forEach { (a, b) -> a.compareTo(b).let { if (it != 0) return it } }
+        return 0
     }
 
-    override fun toString(): String = 5.of(kind)
-}
+    override fun toString(): String = toString2()//
 
-data class FourOfA(val kind: Int, val rest: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> -1
-        is FourOfA -> compareValuesBy(this, other, FourOfA::kind, FourOfA::rest)
-        else -> 1
+    fun toString1() = type.name + " " + kinds.joinToString("") { 1.of(it) }
+
+    fun toString2(): String = when (type) {
+        FiveOfA -> kinds.joinToString(" ") { 5.of(it) }
+        FourOfA -> kinds.let { (a, b) -> "${4.of(a)} ${1.of(b)}" }
+        FullHouse -> kinds.let { (a, b) -> "${3.of(a)} ${2.of(b)}" }
+        ThreeOfA -> kinds.let { (a, b, c) -> "${3.of(a)} ${1.of(b)} ${1.of(c)}" }
+        TwoPair -> kinds.let { (a, b, c) -> "${2.of(a)} ${2.of(b)} ${1.of(c)}" }
+        OnePair -> 2.of(kinds.first()) + " " + kinds.drop(1).joinToString(" ") { 1.of(it) }
+        HighCard -> kinds.joinToString(" ") { 1.of(it) }
     }
 
-    override fun toString(): String = "${4.of(kind)} ${1.of(rest)}"
-}
-
-data class FullHouse(val triple: Int, val pair: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> -1
-        is FourOfA -> -1
-        is FullHouse -> compareValuesBy(this, other, FullHouse::triple, FullHouse::pair)
-        else -> 1
-    }
-    override fun toString(): String = "${3.of(triple)} ${2.of(pair)}"
-}
-
-data class ThreeOfA(val kind: Int, val rest1: Int, val rest2: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> -1
-        is FourOfA -> -1
-        is FullHouse -> -1
-        is ThreeOfA -> compareValuesBy(this, other, ThreeOfA::kind, ThreeOfA::rest1, ThreeOfA::rest2)
-        else -> 1
-    }
-    override fun toString(): String = "${3.of(kind)} ${1.of(rest1)} ${1.of(rest2)}"
-}
-
-data class TwoPair(val pair1: Int, val pair2: Int, val rest: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> -1
-        is FourOfA -> -1
-        is FullHouse -> -1
-        is ThreeOfA -> -1
-        is TwoPair -> compareValuesBy(this, other, TwoPair::pair1, TwoPair::pair2, TwoPair::rest)
-        else -> 1
-    }
-    override fun toString(): String = "${2.of(pair1)} ${2.of(pair2)} ${1.of(rest)}"
-}
-
-data class OnePair(val kind: Int, val rest1: Int, val rest2: Int, val rest3: Int) : Hand {
-    override fun compareTo(other: Hand) = when (other) {
-        is FiveOfA -> -1
-        is FourOfA -> -1
-        is FullHouse -> -1
-        is ThreeOfA -> -1
-        is TwoPair -> -1
-        is OnePair -> compareValuesBy(this, other, OnePair::kind, OnePair::rest1, OnePair::rest2, OnePair::rest3)
-        else -> 1
-    }
-    override fun toString(): String = "${2.of(kind)} ${1.of(rest1)} ${1.of(rest2)} ${1.of(rest3)}"
-}
-
-data class HighCard(val k1: Int, val k2: Int, val k3: Int, val k4: Int, val k5: Int) : Hand {
-    override fun compareTo(oth: Hand) = when (oth) {
-        is HighCard -> compareValuesBy(this, oth, HighCard::k1, HighCard::k2, HighCard::k3, HighCard::k4, HighCard::k5)
-        else -> -1
-    }
-    override fun toString(): String = "${1.of(k1)} ${1.of(k2)} ${1.of(k3)} ${1.of(k4)} ${1.of(k5)}"
 }
 
 fun String.toHand(): Hand {
@@ -102,15 +53,18 @@ fun String.toHand(): Hand {
     check(g.sumOf { it.second } == 5) { "`$this` parsed to $g and doesn't sum up" }
     g.windowed(2)
         .forEach { (a, b) -> check(a.second > b.second || a.second == b.second && a.first > b.first) { "failed sorting $g on $a vs $b" } }
+    val t1 = g.size
+    val t2 = g[0].second
+    val kinds = g.map { it.first }
 
     return when {
-        g.size == 1 -> FiveOfA(g[0].first)
-        g.size == 2 && g[0].second == 4 -> FourOfA(g[0].first, g[1].first)
-        g.size == 2 && g[0].second == 3 -> FullHouse(g[0].first, g[1].first)
-        g.size == 3 && g[0].second == 3 -> ThreeOfA(g[0].first, g[1].first, g[2].first)
-        g.size == 3 && g[0].second == 2 -> TwoPair(g[0].first, g[1].first, g[2].first)
-        g.size == 4 -> g.map { it.first }.let { (a, b, c, d) -> OnePair(a, b, c, d) }
-        g.size == 5 -> g.map { it.first }.let { (a, b, c, d, e) -> HighCard(a, b, c, d, e) }
+        t1 == 1 && t2 == 5 -> Hand(FiveOfA, kinds)
+        t1 == 2 && t2 == 4 -> Hand(FourOfA, kinds)
+        t1 == 2 && t2 == 3 -> Hand(FullHouse, kinds)
+        t1 == 3 && t2 == 3 -> Hand(ThreeOfA, kinds)
+        t1 == 3 && t2 == 2 -> Hand(TwoPair, kinds)
+        t1 == 4 && t2 == 2 -> Hand(OnePair, kinds)
+        t1 == 5 && t2 == 1 -> Hand(HighCard, kinds)
         else -> error("what to do with `$this` that parsed to $g ???")
     }.logged { this }
 }
