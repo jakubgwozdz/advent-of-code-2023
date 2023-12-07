@@ -17,15 +17,16 @@ fun parse(inputStr: String) = inputStr.lines().filterNot { it.isBlank() }
 
 const val order = "_j23456789TJQKA_"
 
-data class Hand(val type: Int, val cards: String) : Comparable<Hand> {
-    val value = cards.fold(type) { acc, c -> acc * 16 + order.indexOf(c) }
+data class Hand(val value: Int) : Comparable<Hand> {
+    constructor(type: Int, cards: String) : this(cards.fold(type) { acc, c -> acc * 16 + order.indexOf(c) })
+    val type: Int get() = value shr 20
     override fun compareTo(other: Hand): Int = value.compareTo(other.value)
-    override fun toString() = value.toString(16).padStart(8,'0')
+    override fun toString() = value.toString(16).padStart(8, '0')
 }
 
 fun normalHand(cards: String): Hand {
     val counts = cards.groupBy { it }.map { (_, v) -> v.size }.sortedDescending()
-    val type = (counts[0] * 16 + counts.getOrElse(1) { 0 })*16
+    val type = (counts[0] * 16 + counts.getOrElse(1) { 0 }) * 16
     return Hand(type, cards)
 }
 
