@@ -12,19 +12,6 @@ fun main() {
     puzzle.part2()
 }
 
-enum class Choice { L, R }
-typealias State = Pair<Long, String>
-data class Input(val instruction: List<Choice>, val map: Map<String, Pair<String, String>>) {
-    fun next(from: State): State {
-        val (steps, current) = from
-        val result = when (instruction[(steps % instruction.size).toInt()]) {
-            Choice.L -> map[current]!!.first
-            Choice.R -> map[current]!!.second
-        }
-        return steps + 1 to result
-    }
-}
-
 fun parse(inputStr: String): Input {
     val lines = inputStr.lines().filterNot { it.isBlank() }
     val instruction = lines.first().map { Choice.valueOf(it.toString()) }
@@ -35,16 +22,26 @@ fun parse(inputStr: String): Input {
     return Input(instruction, map)
 }
 
-fun part1(input: Input) = find(input, "AAA") { it == "ZZZ" }
+enum class Choice { L, R }
+typealias State = Pair<Long, String>
+data class Input(val instruction: List<Choice>, val map: Map<String, Pair<String, String>>)
 
-private fun find(input: Input, start: String, predicate: (String) -> Boolean): Long {
-    var state = (0L to start)
-    while (!predicate(state.second)) state = input.next(state)
-    return state.first
+fun State.next(input: Input): State {
+    val (steps, current) = this
+    val result = when (input.instruction[(steps % input.instruction.size).toInt()]) {
+        Choice.L -> input.map[current]!!.first
+        Choice.R -> input.map[current]!!.second
+    }
+    return steps + 1 to result
 }
+
+fun find(input: Input, start: String, predicate: (String) -> Boolean) =
+    generateSequence(0L to start) { if (predicate(it.second)) null else it.next(input) }.last().first
+
+fun part1(input: Input) = find(input, "AAA") { it == "ZZZ" }
 
 // this is waaaaay oversimplified but works for the input
 fun part2(input: Input) = input.map.keys.filter { it.endsWith('A') }
     .map { start -> find(input, start) { it.endsWith('Z') } }
     .reduce { a, b -> lcm(a, b) }
-//9064949303801
+
