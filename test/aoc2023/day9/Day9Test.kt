@@ -1,7 +1,6 @@
 package aoc2023.day9
 
 import org.junit.jupiter.api.Timeout
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 
@@ -12,7 +11,6 @@ class Day9Test {
         1 3 6 10 15 21
         10 13 16 21 30 45
     """.trimIndent()
-
 
     @Test
     @Timeout(5)
