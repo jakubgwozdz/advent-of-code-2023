@@ -11,11 +11,6 @@ import kotlin.test.expect
 class Day10Test {
 
     @Test
-    fun part2t0a() {
-        expect(16) { listOf(E, E, E, E, E, S, S, S, S, S, W, W, W, W, W, N, N, N, N, N).countInsides() }
-    }
-
-    @Test
     @Timeout(5)
     fun part2test1() {
         val testInputStr = """

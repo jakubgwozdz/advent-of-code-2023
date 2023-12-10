@@ -3,9 +3,7 @@ package aoc2023.day10
 import aoc2023.Puzzle
 import aoc2023.day10.Move.*
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
-import java.util.Comparator
 import kotlin.math.absoluteValue
 
 fun main() {
@@ -17,82 +15,57 @@ fun main() {
 
 typealias Pos = Pair<Int, Int>
 
-data class Input(val map: List<String>, val start: Pos)
-
-fun parse(inputStr: String, cheat: Char = '|'): Input {
-    val lines = inputStr.lines()
-    val start = lines.indexOfFirst { it.contains('S') }.let { r -> r to lines[r].indexOf('S') }
-    return Input(lines.map { it.replace('S', cheat) }, start)
-}
-
-fun findBoth(pos: Pos, input: Input): List<Pos> = pos.let { (r, c) ->
-    when (input.map[r][c]) {
-//        'S' -> listOf(r + 1 to c, r - 1 to c)
-        '|' -> listOf(r + 1 to c, r - 1 to c)
-        '-' -> listOf(r to c - 1, r to c + 1)
-        'L' -> listOf(r - 1 to c, r to c + 1)
-        'J' -> listOf(r - 1 to c, r to c - 1)
-        'F' -> listOf(r + 1 to c, r to c + 1)
-        '7' -> listOf(r + 1 to c, r to c - 1)
-        else -> error("${input.map[r][c]} at $pos")
-    }
-}
-
-fun part1(input: Input): Int = // 7086
-    input.loop().count() / 2
-
-private fun Input.loop(): Sequence<Pos> {
-    val loop = generateSequence(start to start) { (prevPos, pos) ->
-        val newPos = findBoth(pos, this).first { it != prevPos }
-        if (newPos == start) null
-        else pos to newPos
-    }
-    return loop.map { it.second }
+operator fun Pos.plus(move: Move): Pos = when (move) {
+    N -> first - 1 to second
+    S -> first + 1 to second
+    W -> first to second - 1
+    E -> first to second + 1
 }
 
 enum class Move { N, S, W, E }
+typealias Input = List<Move>
 
-fun List<Move>.countInsides(): Int {
-    var sum = 0
-    var dx = 0
-    forEach { move ->
-        when (move) {
-            N -> sum -= dx
-            S -> sum += dx
-            W -> dx--
-            E -> dx++
+operator fun List<String>.get(pos: Pos): Char = getOrNull(pos.first)?.getOrNull(pos.second) ?: '.'
+fun List<String>.getStart(): Pos {
+    forEachIndexed { row, line ->
+        line.forEachIndexed { col, ch -> if (ch == 'S') return row to col }
+    }
+    error("no 'S' found")
+}
+
+fun parse(inputStr: String, cheat: Char = '|'): Input {
+    val lines = inputStr.lines()
+    val start: Pos = lines.getStart()
+    val firstMove = when {
+        lines[start + N] in "7|F" -> N
+        lines[start + E] in "7-J" -> E
+        else -> S
+    }
+    return generateSequence(start to firstMove) { (pos, move) ->
+        val nextPos = pos + move
+        if (nextPos == start) null else {
+            val nextMove = when (lines[nextPos]) {
+                '|' -> if (move == N) N else S
+                '-' -> if (move == W) W else E
+                'L' -> if (move == S) E else N
+                'J' -> if (move == S) W else N
+                'F' -> if (move == N) E else S
+                '7' -> if (move == N) W else S
+                else -> error("$nextPos?")
+            }
+            nextPos to nextMove
         }
     }
-    return sum.absoluteValue - (size/2)+1
+        .map { it.second }
+        .toList()
 }
 
-fun part2(input: Input): Int {
-    val loop = input.loop().toList()
-    val moves = (loop + loop.first()).zipWithNext(::move)
-    return moves.countInsides()
-}
-
-private fun List<Pos>.normalize(): List<Pos> {
-    val topLeft = minWith(Comparator.comparingInt(Pos::first).thenComparingInt(Pos::second))
-    val index = indexOf(topLeft)
-    val indexOfNext = (index + 1) % size
-    return when (move(this[index], this[indexOfNext])) {
-        E -> drop(index) + take(index)
-        S -> (drop(index) + take(index)).reversed().let { listOf(it.last()) + it.dropLast(1) }
-        else -> error("wtf")
+fun part1(input: Input) = input.count() / 2
+fun part2(input: Input) = input.fold(0 to 0) { (sum, dx), move ->
+    when (move) {
+        N -> sum - dx to dx
+        S -> sum + dx to dx
+        W -> sum to dx - 1
+        E -> sum to dx + 1
     }
-}
-
-private fun move(pos1: Pos, pos2: Pos): Move {
-    val (r1, c1) = pos1
-    val (r2, c2) = pos2
-    return when (r2 - r1 to c2 - c1) {
-        -1 to 0 -> N
-        1 to 0 -> S
-        0 to -1 -> W
-        0 to 1 -> E
-        else -> error("$pos1 moves to $pos2?")
-    }
-}
-
-
+}.first.absoluteValue - (input.size / 2) + 1
