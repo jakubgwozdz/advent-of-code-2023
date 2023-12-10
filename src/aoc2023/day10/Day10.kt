@@ -43,18 +43,16 @@ fun parse(inputStr: String, cheat: Char = '|'): Input {
     }
     return generateSequence(start to firstMove) { (pos, move) ->
         val nextPos = pos + move
-        if (nextPos == start) null else {
-            val nextMove = when (lines[nextPos]) {
-                '|' -> if (move == N) N else S
-                '-' -> if (move == W) W else E
-                'L' -> if (move == S) E else N
-                'J' -> if (move == S) W else N
-                'F' -> if (move == N) E else S
-                '7' -> if (move == N) W else S
-                else -> error("$nextPos?")
-            }
-            nextPos to nextMove
+        if (nextPos != start) nextPos to when (lines[nextPos]) {
+            '|' -> if (move == N) N else S
+            '-' -> if (move == W) W else E
+            'L' -> if (move == S) E else N
+            'J' -> if (move == S) W else N
+            'F' -> if (move == N) E else S
+            '7' -> if (move == N) W else S
+            else -> error("$nextPos?")
         }
+        else null
     }
         .map { it.second }
         .toList()
