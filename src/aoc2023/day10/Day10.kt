@@ -55,11 +55,11 @@ fun parse(inputStr: String, cheat: Char = '|'): Input {
 }
 
 fun part1(input: Input) = input.count() / 2
-fun part2(input: Input) = input.fold(0 to 0) { (sum, dx), move ->
+fun part2(input: Input) = input.fold(0 to 0) { (sum, d), move ->
     when (move) {
-        N -> sum - dx to dx
-        S -> sum + dx to dx
-        W -> sum to dx - 1
-        E -> sum to dx + 1
+        N -> sum to d + 1
+        S -> sum to d - 1
+        W -> sum - d to d
+        E -> sum + d to d
     }
 }.first.absoluteValue - (input.size / 2) + 1
