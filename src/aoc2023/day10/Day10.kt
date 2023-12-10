@@ -26,16 +26,12 @@ enum class Move { N, S, W, E }
 typealias Input = List<Move>
 
 operator fun List<String>.get(pos: Pos): Char = getOrNull(pos.first)?.getOrNull(pos.second) ?: '.'
-fun List<String>.getStart(): Pos {
-    forEachIndexed { row, line ->
-        line.forEachIndexed { col, ch -> if (ch == 'S') return row to col }
-    }
-    error("no 'S' found")
-}
 
 fun parse(inputStr: String, cheat: Char = '|'): Input {
     val lines = inputStr.lines()
-    val start: Pos = lines.getStart()
+    val start: Pos = lines.indices.asSequence()
+        .flatMap { row -> lines[row].indices.map { row to it } }
+        .first { pos -> lines[pos] == 'S' }
     val firstMove = when {
         lines[start + N] in "7|F" -> N
         lines[start + E] in "7-J" -> E
