@@ -7,8 +7,6 @@ import kotlin.test.expect
 
 class Day11Test {
 
-    val testInput: Input? = null
-
     val testInputStr = """
         ...#......
         .......#..
@@ -21,14 +19,6 @@ class Day11Test {
         .......#..
         #...#.....
     """.trimIndent()
-
-
-    @Test
-    @Timeout(1)
-    @Ignore
-    fun parseTest() {
-        expect(testInput) { parse(testInputStr) }
-    }
 
     @Test
     @Timeout(5)
