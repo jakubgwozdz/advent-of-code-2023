@@ -28,7 +28,7 @@ class Day11Test {
     @Test
     @Timeout(5)
     fun part2test10() {
-        expect(1030L) { calc2D(parse(testInputStr), 10) }
+        expect(1030L) { parse(testInputStr).calc2D(10) }
     }
 
 }

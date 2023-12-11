@@ -24,9 +24,11 @@ fun <T> readAndParse(filename: String, parseOp: (String) -> T) = File(filename).
 fun <T> String.tryMatch(regex: Regex, op: (MatchResult.Destructured) -> T) =
     regex.matchEntire(this)?.destructured?.let(op)
 
-inline fun <T:Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
+inline fun <T : Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
     prefixOp().toString().let { if (it.isNotEmpty()) println("$it: $v") else println(v) }
 }
+
+inline fun <T : Any?> T.logged(prefix: Any?) = logged { prefix }
 
 fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
 fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)
@@ -35,7 +37,7 @@ fun String.ints() = split(" ").filterNot(String::isBlank).map(String::toInt)
 fun String.longs() = split(" ").filterNot(String::isBlank).map(String::toLong)
 
 // inspired by pseudocode at https://rosettacode.org/wiki/Isqrt_(integer_square_root)_of_X
-fun Long.isqrt(ceil:Boolean = false): Long {
+fun Long.isqrt(ceil: Boolean = false): Long {
     require(this >= 0)
     var q = 1L
     while (q <= this) q = q shl 2
