@@ -1,4 +1,4 @@
-package aoc2023.day0
+package aoc2023.day12
 
 import aoc2023.Puzzle
 import aoc2023.getDay

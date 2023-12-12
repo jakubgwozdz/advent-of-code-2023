@@ -2,13 +2,10 @@ package aoc2023.day11
 
 import aoc2023.Puzzle
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
 import kotlin.math.absoluteValue
 
 fun main() {
-    listOf(0L, 1L, 1L, 3L, 5L, 0L).runningFold(5L) { acc, i -> acc + i }.logged()
-
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
     puzzle.part1()
@@ -31,7 +28,7 @@ fun List<Int>.calc1D(expansion: Int) = expanded(expansion).distinctWithCounts().
 fun List<Int>.expanded(expansion: Int): List<Long> = sorted()
     .zipWithNext { a, b -> (b - a).toLong() }
     .map { if (it > 1) (it - 1) * expansion + 1 else it }
-    .runningFold(first().toLong(), Long::plus)
+    .runningFold(0, Long::plus)
 
 fun List<Long>.distinctWithCounts() = groupBy { it }.map { it.key to it.value.size }
 
