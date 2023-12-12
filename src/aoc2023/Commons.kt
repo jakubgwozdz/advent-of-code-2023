@@ -57,3 +57,12 @@ fun Long.isqrt(ceil: Boolean = false): Long {
 
 tailrec fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
 fun lcm(a: Long, b: Long): Long = a / gcd(a, b) * b
+
+inline fun <T, R> cachedDeepRecursiveFunction(
+    cache: MutableMap<T, R> = mutableMapOf(),
+    crossinline block: suspend DeepRecursiveScope<T, R>.(T) -> R
+): DeepRecursiveFunction<T, R> =
+    DeepRecursiveFunction { value ->
+        if (value in cache) cache[value]!! else block(value).also { cache[value] = it }
+    }
+
