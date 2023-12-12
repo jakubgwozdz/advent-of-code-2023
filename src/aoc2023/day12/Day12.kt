@@ -12,35 +12,45 @@ fun main() {
     puzzle.part2()
 }
 
-data class Row(val springs: String, val groups: List<Int>)
+data class Row(val springs: String, val groups: List<Int>) {
+    fun repeated(i: Int) = Row((1..i).joinToString("?") { springs }, buildList { repeat(i) { addAll(groups) } })
+}
 typealias Input = List<Row>
 
 fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }.map { line ->
     line.split(" ").let { (springs, i) -> Row(springs, i.ints(",")) }
 }
 
-fun calc(row: Row): Long = DeepRecursiveFunction<Row, Long> { (springs, groups) ->
-    when {
-        groups.isEmpty() -> if ('#' in springs) 0 else 1
-        springs.isEmpty() -> if (groups.isEmpty()) 1 else 0
-        springs.first() == '.' -> callRecursive(Row(springs.drop(1), groups))
-        springs.first() == '?' -> callRecursive(Row(springs.replaceFirst('?', '.'), groups)) +
-                callRecursive(Row(springs.replaceFirst('?', '#'), groups))
+fun calc(row: Row): Long {
+    data class State(val springs: String, val groups: List<Int>) {
+        fun skipDots() = copy(springs = springs.dropWhile { it == '.' })
+        fun assumeDot() = copy(springs = "." + springs.drop(1))
+        fun assumeHash() = copy(springs = "#" + springs.drop(1))
+        fun skipFirstGroup() = State(springs.drop(groups.first() + 1), groups.drop(1))
 
-        !fits(springs, groups.first()) -> 0
-        else -> callRecursive(Row(springs.drop(groups.first() + 1), groups.drop(1)))
+        fun noMoreGroups() = groups.isEmpty()
+        fun noMoreHash() = '#' !in springs
+        fun firstDot() = springs.first() == '.'
+        fun firstQuestion() = springs.first() == '?'
+        fun onlyDotsLeft() = springs.all { it == '.' }
+        fun fitsBeginning() = springs.length >= groups.first() &&
+                '.' !in springs.take(groups.first()) &&
+                (springs.length < groups.first() + 1 || springs[groups.first()] != '#')
     }
-}(row)
 
-private fun fits(springs: String, len: Int) =
-    springs.length >= len && '.' !in springs.take(len) && (springs.length < len + 1 || springs[len] != '#')
-
-fun part1(input: Input) = input.sumOf { calc(it) }
-
-fun part2(input: Input) = input.sumOf { calc(fiveTimes(it)) }
-
-fun fiveTimes(row: Row): Row {
-    return Row((1..5).map { row.springs }.joinToString("?"), buildList{ repeat(5) { addAll(row.groups)} })
+    val cache = mutableMapOf<State, Long>()
+    return DeepRecursiveFunction<State, Long> { state ->
+        when {
+            state in cache -> cache[state]!!
+            state.noMoreGroups() -> if (state.noMoreHash()) 1 else 0
+            state.onlyDotsLeft() -> if (state.noMoreGroups()) 1 else 0
+            state.firstQuestion() -> callRecursive(state.assumeHash()) + callRecursive(state.assumeDot())
+            state.firstDot() -> callRecursive(state.skipDots())
+            state.fitsBeginning() -> callRecursive(state.skipFirstGroup())
+            else -> 0
+        }.also { cache[state] = it }
+    }(State(row.springs, row.groups))
 }
 
-
+fun part1(input: Input) = input.sumOf { calc(it) }
+fun part2(input: Input) = input.sumOf { calc(it.repeated(5)) }
