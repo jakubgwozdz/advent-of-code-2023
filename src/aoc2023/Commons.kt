@@ -33,8 +33,8 @@ inline fun <T : Any?> T.logged(prefix: Any?) = logged { prefix }
 fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
 fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)
 
-fun String.ints() = split(" ").filterNot(String::isBlank).map(String::toInt)
-fun String.longs() = split(" ").filterNot(String::isBlank).map(String::toLong)
+fun String.ints(delimiter: String = " ") = split(delimiter).filterNot(String::isBlank).map(String::toInt)
+fun String.longs(delimiter: String = " ") = split(delimiter).filterNot(String::isBlank).map(String::toLong)
 
 // inspired by pseudocode at https://rosettacode.org/wiki/Isqrt_(integer_square_root)_of_X
 fun Long.isqrt(ceil: Boolean = false): Long {

@@ -1,38 +1,42 @@
 package aoc2023.day12
 
 import org.junit.jupiter.api.Timeout
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 
 class Day12Test {
 
-    val testInput: Input? = null
-
     val testInputStr = """
-        42
+        ???.### 1,1,3
+        .??..??...?##. 1,1,3
+        ?#?#?#?#?#?#?#? 1,3,1,6
+        ????.#...#... 4,1,1
+        ????.######..#####. 1,6,5
+        ?###???????? 3,2,1
     """.trimIndent()
 
+//    @Test
+//    @Timeout(1)
+//    fun parseTest() {
+//        expect(testInput) { parse(testInputStr) }
+//    }
 
     @Test
-    @Timeout(1)
-    @Ignore
-    fun parseTest() {
-        expect(testInput) { parse(testInputStr) }
+    @Timeout(5)
+    fun part1testParts() {
+        expect(listOf(1L, 4L, 1L, 1L, 4L, 10L)) { parse(testInputStr).map { calc(it) } }
     }
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part1test() {
-        expect(226) { part1(parse(testInputStr)) }
+        expect(21L) { part1(parse(testInputStr)) }
     }
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part2test() {
-        expect(3) { part2(parse(testInputStr)) }
+        expect(525152L) { part2(parse(testInputStr)) }
     }
 
 }

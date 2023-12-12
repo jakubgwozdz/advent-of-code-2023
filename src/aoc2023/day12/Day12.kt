@@ -2,6 +2,7 @@ package aoc2023.day12
 
 import aoc2023.Puzzle
 import aoc2023.getDay
+import aoc2023.ints
 import aoc2023.readAndParse
 
 fun main() {
@@ -11,18 +12,35 @@ fun main() {
     puzzle.part2()
 }
 
-//data class Input(val todo: Int)
-typealias Input = List<String>
+data class Row(val springs: String, val groups: List<Int>)
+typealias Input = List<Row>
 
-fun parse(inputStr: String): Input {
-    return inputStr.lines().filterNot { it.isBlank() }
-//    return Input("Damage: (\\d+)".toRegex().find(inputStr)?.destructured?.component1()?.toInt()!!)
-//    TODO("parse ${inputStr.length} data")
-
+fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }.map { line ->
+    line.split(" ").let { (springs, i) -> Row(springs, i.ints(",")) }
 }
 
-fun part1(input: Input): Any? = input.toString() // TODO("part 1 with ${input.toString().length} data")
+fun calc(row: Row): Long = DeepRecursiveFunction<Row, Long> { (springs, groups) ->
+    when {
+        groups.isEmpty() -> if ('#' in springs) 0 else 1
+        springs.isEmpty() -> if (groups.isEmpty()) 1 else 0
+        springs.first() == '.' -> callRecursive(Row(springs.drop(1), groups))
+        springs.first() == '?' -> callRecursive(Row(springs.replaceFirst('?', '.'), groups)) +
+                callRecursive(Row(springs.replaceFirst('?', '#'), groups))
 
-fun part2(input: Input): Any? = null // TODO("part 2 with ${input.toString().length} data")
+        !fits(springs, groups.first()) -> 0
+        else -> callRecursive(Row(springs.drop(groups.first() + 1), groups.drop(1)))
+    }
+}(row)
+
+private fun fits(springs: String, len: Int) =
+    springs.length >= len && '.' !in springs.take(len) && (springs.length < len + 1 || springs[len] != '#')
+
+fun part1(input: Input) = input.sumOf { calc(it) }
+
+fun part2(input: Input) = input.sumOf { calc(fiveTimes(it)) }
+
+fun fiveTimes(row: Row): Row {
+    return Row((1..5).map { row.springs }.joinToString("?"), buildList{ repeat(5) { addAll(row.groups)} })
+}
 
 
