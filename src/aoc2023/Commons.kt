@@ -13,7 +13,7 @@ fun execute(desc: String, part: () -> Any?): Duration {
             e.message
         }
     }
-    println("$desc took ${t.duration} and resulted with: ${t.value}")
+    println("$desc took ${t.duration.inWholeMicroseconds/1000.0}ms and resulted with: ${t.value}")
     return t.duration
 }
 
