@@ -1,7 +1,6 @@
 package aoc2023.day12
 
 import aoc2023.Puzzle
-import aoc2023.cachedDeepRecursiveFunction
 import aoc2023.getDay
 import aoc2023.ints
 import aoc2023.readAndParse
@@ -50,18 +49,18 @@ fun calc(row: Row): Long {
     }
 
 //    val cache = Cache()
+    val cache = mutableMapOf<State, Long>()
 
-    return cachedDeepRecursiveFunction(/*cache*/) { state: State ->
-        when {
-            state.success() -> 1
-            state.noMoreGroups() -> 0
-            state.wontFit() -> 0
-            state.firstDot() -> callRecursive(state.skipDots())
-            else -> (if (state.firstQuestion()) callRecursive(state.assumeDot()) else 0L) +
-                    (if (state.fitsBeginning()) callRecursive(state.skipFirstGroup()) else 0L)
-        }
-    }(State())
-//        .also { cache.logged("called") }
+    fun calcRecursive(state: State): Long = cache[state] ?: when {
+        state.success() -> 1
+        state.noMoreGroups() -> 0
+        state.wontFit() -> 0
+        state.firstDot() -> calcRecursive(state.skipDots())
+        else -> (if (state.firstQuestion()) calcRecursive(state.assumeDot()) else 0L) +
+                (if (state.fitsBeginning()) calcRecursive(state.skipFirstGroup()) else 0L)
+    }.also { cache[state] = it }
+
+    return calcRecursive(State())
 }
 
 fun part1(input: Input) = input.sumOf { calc(it.trimDots()) }

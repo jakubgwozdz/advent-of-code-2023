@@ -3,3 +3,5 @@ settings:
   kotlin:
     serialization: json
   junit: junit-5
+dependencies:
+  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC

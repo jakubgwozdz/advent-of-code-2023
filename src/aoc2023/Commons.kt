@@ -1,5 +1,9 @@
 package aoc2023
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
@@ -69,16 +73,20 @@ inline fun <T, R> cachedDeepRecursiveFunction(
     crossinline block: suspend DeepRecursiveScope<T, R>.(T) -> R
 ): DeepRecursiveFunction<T, R> =
     DeepRecursiveFunction { value ->
-         cache[value]?: block(value).also { cache[value] = it }
+        cache[value] ?: block(value).also { cache[value] = it }
     }
 
-class Cache<K,V>(val map: MutableMap<K,V> = mutableMapOf()) : MutableMap<K,V> by map {
+class Cache<K, V>(val map: MutableMap<K, V> = mutableMapOf()) : MutableMap<K, V> by map {
     var hits = 0L
     var misses = 0L
     override fun get(key: K): V? {
         if (key in this) hits++ else misses++
         return map[key]
     }
+
     override fun toString() = "cache hits=$hits; misses=$misses"
 }
 
+//fun <T, R> List<T>.mapParallel(op: (T) -> R) = parallelStream().map { op(it) }.toList().toList()
+fun <T, R> List<T>.mapParallel(op: (T) -> R) = runBlocking { map { async(Dispatchers.Default) { op(it) } }.awaitAll() }
+//fun <T, R> List<T>.mapParallel(op: (T) -> R) = map { op(it) }
