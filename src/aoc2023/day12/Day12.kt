@@ -24,46 +24,44 @@ fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
     line.split(" ").let { (springs, i) -> Row(springs, i.ints(",")) }
 }
 
-fun String.indexOfFirstNotDot(start: Int) =
-    generateSequence(start) { if (getOrNull(it) == '.') it + 1 else null }.last()
-
 fun calc(row: Row): Long {
 
-    val minimals = row.groups.reversed().runningFold(-1) { acc: Int, i: Int -> acc + 1 + i }
-        .drop(1)
+    val (springs, groups) = row
+    val minimals = groups.reversed().runningReduce { acc: Int, i: Int -> acc + 1 + i }.reversed()
+    val firstNotDot = springs
         .reversed()
+        .runningFoldIndexed(springs.length) { index, acc, c -> if (c == '.') acc else springs.length - index - 1 }
+        .reversed()
+    val lastHash = springs.lastIndexOf('#')
 
     data class State(val s: Int = 0, val g: Int = 0) {
-        fun skipDots() = copy(s = row.springs.indexOfFirstNotDot(s))
-        fun assumeDot() = copy(s = s + 1)
-        fun skipFirstGroup() = copy(s = s + row.groups[g] + 1, g = g + 1)
+        fun skipDots() = copy(s = firstNotDot[s])
+        fun assumeDot() = copy(s = firstNotDot[s + 1])
+        fun skipFirstGroup() = copy(s = s + groups[g] + 1, g = g + 1)
 
-        fun noMoreGroups() = row.groups.size <= g
-        fun noMoreHash() = (s..row.springs.lastIndex).none { row.springs[it] == '#' }
-        fun firstDot() = row.springs[s] == '.'
-        fun firstQuestion() = row.springs[s] == '?'
-        fun onlyDotsLeft() = (s..row.springs.lastIndex).all { row.springs[it] == '.' }
-        fun wontFit() = minimals[g] > row.springs.length - s
-        fun fitsBeginning(): Boolean {
-            val len = row.groups[g]
-            val next = row.springs.drop(s).take(len + 1)
-            return next.length >= len && (0..<len).none { next[it] == '.' } && next.getOrNull(len) != '#'
-        }
+        fun noMoreGroups() = g >= groups.size
+        fun success() = g >= groups.size && s > lastHash
+        fun firstDot() = springs[s] == '.'
+        fun firstQuestion() = springs[s] == '?'
+        fun wontFit() = minimals[g] > springs.length - s
+        fun fitsBeginning() = springs.length - s >= groups[g] &&
+                (0..<groups[g]).none { springs[s + it] == '.' } &&
+                springs.getOrNull(s + groups[g]) != '#'
     }
 
-    return cachedDeepRecursiveFunction<State, Long> {
+//    val cache = Cache()
+
+    return cachedDeepRecursiveFunction(/*cache*/) { state: State ->
         when {
-            it.noMoreGroups() && it.noMoreHash() -> 1
-            it.noMoreGroups() -> 0
-            it.onlyDotsLeft() -> 0
-            it.wontFit() -> 0
-            it.firstDot() -> callRecursive(it.skipDots())
-            it.firstQuestion() && it.fitsBeginning() -> callRecursive(it.assumeDot()) + callRecursive(it.skipFirstGroup())
-            it.firstQuestion() -> callRecursive(it.assumeDot())
-            it.fitsBeginning() -> callRecursive(it.skipFirstGroup())
-            else -> 0
+            state.success() -> 1
+            state.noMoreGroups() -> 0
+            state.wontFit() -> 0
+            state.firstDot() -> callRecursive(state.skipDots())
+            else -> (if (state.firstQuestion()) callRecursive(state.assumeDot()) else 0L) +
+                    (if (state.fitsBeginning()) callRecursive(state.skipFirstGroup()) else 0L)
         }
     }(State())
+//        .also { cache.logged("called") }
 }
 
 fun part1(input: Input) = input.sumOf { calc(it.trimDots()) }

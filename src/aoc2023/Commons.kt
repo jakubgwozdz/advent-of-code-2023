@@ -69,6 +69,16 @@ inline fun <T, R> cachedDeepRecursiveFunction(
     crossinline block: suspend DeepRecursiveScope<T, R>.(T) -> R
 ): DeepRecursiveFunction<T, R> =
     DeepRecursiveFunction { value ->
-        if (value in cache) cache[value]!! else block(value).also { cache[value] = it }
+         cache[value]?: block(value).also { cache[value] = it }
     }
+
+class Cache<K,V>(val map: MutableMap<K,V> = mutableMapOf()) : MutableMap<K,V> by map {
+    var hits = 0L
+    var misses = 0L
+    override fun get(key: K): V? {
+        if (key in this) hits++ else misses++
+        return map[key]
+    }
+    override fun toString() = "cache hits=$hits; misses=$misses"
+}
 
