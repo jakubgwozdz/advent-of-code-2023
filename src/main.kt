@@ -11,4 +11,5 @@ fun main() {
     aoc2023.day10.main()
     aoc2023.day11.main()
     aoc2023.day12.main()
+    aoc2023.day13.main()
 }

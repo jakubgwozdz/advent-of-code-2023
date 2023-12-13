@@ -15,6 +15,8 @@ fun main() {
 
 data class Row(val springs: String, val groups: List<Int>) {
     fun repeated(i: Int) = Row((1..i).joinToString("?") { springs }, buildList { repeat(i) { addAll(groups) } })
+    fun trimDots(): Row =
+        copy(springs = springs.dropWhile { it == '.' }.dropLastWhile { it == '.' }.replace("\\.+".toRegex(), "."))
 }
 typealias Input = List<Row>
 
@@ -22,28 +24,30 @@ fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
     line.split(" ").let { (springs, i) -> Row(springs, i.ints(",")) }
 }
 
-fun String.indexOfFirstNotDot(start: Int) = generateSequence(start) {
-    if (getOrNull(it) == '.') it + 1 else null
-}.last()
+fun String.indexOfFirstNotDot(start: Int) =
+    generateSequence(start) { if (getOrNull(it) == '.') it + 1 else null }.last()
 
 fun calc(row: Row): Long {
-    data class State(val s: Int = 0, val g: Int = 0, val h: Int = 0) {
-        fun skipDots() = copy(s = row.springs.indexOfFirstNotDot(s), h = 0)
-        fun assumeDot() = copy(s = s + 1, h = 0)
-        fun assumeHash() = copy(h = h + 1)
-        fun skipFirstGroup() = copy(s = s + row.groups[g] + 1, g = g + 1, h = 0)
+
+    val minimals = row.groups.reversed().runningFold(-1) { acc: Int, i: Int -> acc + 1 + i }
+        .drop(1)
+        .reversed()
+
+    data class State(val s: Int = 0, val g: Int = 0) {
+        fun skipDots() = copy(s = row.springs.indexOfFirstNotDot(s))
+        fun assumeDot() = copy(s = s + 1)
+        fun skipFirstGroup() = copy(s = s + row.groups[g] + 1, g = g + 1)
 
         fun noMoreGroups() = row.groups.size <= g
         fun noMoreHash() = (s..row.springs.lastIndex).none { row.springs[it] == '#' }
-        fun firstDot() = h == 0 && row.springs[s] == '.'
-        fun firstQuestion() = h == 0 && row.springs[s] == '?'
+        fun firstDot() = row.springs[s] == '.'
+        fun firstQuestion() = row.springs[s] == '?'
         fun onlyDotsLeft() = (s..row.springs.lastIndex).all { row.springs[it] == '.' }
+        fun wontFit() = minimals[g] > row.springs.length - s
         fun fitsBeginning(): Boolean {
             val len = row.groups[g]
-            val next = "#".repeat(h) + row.springs.drop(s + h).take(len - h + 1)
-            return next.length >= len &&
-                    (0..<len).none { next[it] == '.' } &&
-                    next.getOrNull(len) != '#'
+            val next = row.springs.drop(s).take(len + 1)
+            return next.length >= len && (0..<len).none { next[it] == '.' } && next.getOrNull(len) != '#'
         }
     }
 
@@ -52,13 +56,15 @@ fun calc(row: Row): Long {
             it.noMoreGroups() && it.noMoreHash() -> 1
             it.noMoreGroups() -> 0
             it.onlyDotsLeft() -> 0
-            it.firstQuestion() -> callRecursive(it.assumeHash()) + callRecursive(it.assumeDot())
+            it.wontFit() -> 0
             it.firstDot() -> callRecursive(it.skipDots())
+            it.firstQuestion() && it.fitsBeginning() -> callRecursive(it.assumeDot()) + callRecursive(it.skipFirstGroup())
+            it.firstQuestion() -> callRecursive(it.assumeDot())
             it.fitsBeginning() -> callRecursive(it.skipFirstGroup())
             else -> 0
         }
     }(State())
 }
 
-fun part1(input: Input) = input.sumOf { calc(it) }
-fun part2(input: Input) = input.sumOf { calc(it.repeated(5)) }
+fun part1(input: Input) = input.sumOf { calc(it.trimDots()) }
+fun part2(input: Input) = input.sumOf { calc(it.repeated(5).trimDots()) }

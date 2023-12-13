@@ -4,16 +4,19 @@ import java.io.File
 import kotlin.time.Duration
 import kotlin.time.measureTimedValue
 
-fun execute(desc: String, part: () -> Any?): Duration {
+fun <R> execute(desc: String, expected: R? = null, part: () -> R?): Duration {
     val t = measureTimedValue {
         try {
-            part()
+            part().let {
+                if (expected != null && it != expected) "$it while expected $expected"
+                else it
+            }
         } catch (e: Throwable) {
             e.printStackTrace()
             e.message
         }
     }
-    println("$desc took ${t.duration.inWholeMicroseconds/1000.0}ms and resulted with: ${t.value}")
+    println("$desc took ${t.duration.inWholeMicroseconds / 1000.0}ms and resulted with: ${t.value}")
     return t.duration
 }
 
@@ -28,7 +31,10 @@ inline fun <T : Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
     prefixOp().toString().let { if (it.isNotEmpty()) println("$it: $v") else println(v) }
 }
 
-inline fun <T : Any?> T.logged(prefix: Any?) = logged { prefix }
+fun <T : Any?> T.logged(prefix: Any?) = logged { prefix }
+fun <T> T.expect(e: T) = also {
+    check(e == it) { "$it while expected $e" }
+}
 
 fun LongRange.move(delta: Long): LongRange = first + delta..last + delta
 fun LongRange.intersect(other: LongRange) = first.coerceAtLeast(other.first)..last.coerceAtMost(other.last)
