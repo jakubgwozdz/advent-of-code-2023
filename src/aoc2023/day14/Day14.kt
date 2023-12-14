@@ -15,22 +15,19 @@ typealias Input = List<String>
 
 fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
 
-fun part1(input: Input)= buildArray(input).apply(Array<CharArray>::north)
-    .let(::toStrings).let(::calcLoad)
+fun part1(input: Input) = input.buildArray().north().toInput().calcLoad()
 
-fun performCycle(state: Input): Input {
-    val array = buildArray(state)
-    array.north()
-    array.west()
-    array.south()
-    array.east()
-    return toStrings(array)
-}
+fun Input.performCycle() = buildArray()
+    .north()
+    .west()
+    .south()
+    .east()
+    .toInput()
 
-fun toStrings(array: Array<CharArray>) = array.map { it.concatToString() }
-fun buildArray(state: Input) = Array(state.size) { row -> CharArray(state.first().length) { col -> state[row][col] } }
+fun Array<CharArray>.toInput() = map { it.concatToString() }
+fun Input.buildArray() = Array(size) { row -> CharArray(first().length) { col -> this[row][col] } }
 
-fun Array<CharArray>.north() {
+fun Array<CharArray>.north() = apply {
     first().indices.forEach { col ->
         var top = -1
         indices.forEach { row ->
@@ -45,7 +42,7 @@ fun Array<CharArray>.north() {
     }
 }
 
-fun Array<CharArray>.west() {
+fun Array<CharArray>.west() = apply {
     indices.forEach { row ->
         var top = -1
         first().indices.forEach { col ->
@@ -60,7 +57,7 @@ fun Array<CharArray>.west() {
     }
 }
 
-fun Array<CharArray>.south() {
+fun Array<CharArray>.south() = apply {
     first().indices.forEach { col ->
         var top = size
         indices.reversed().forEach { row ->
@@ -75,7 +72,7 @@ fun Array<CharArray>.south() {
     }
 }
 
-fun Array<CharArray>.east() {
+fun Array<CharArray>.east() = apply {
     indices.forEach { row ->
         var top = first().size
         first().indices.reversed().forEach { col ->
@@ -90,24 +87,23 @@ fun Array<CharArray>.east() {
     }
 }
 
-fun calcLoad(state: Input): Int =
-    state.withIndex().sumOf { (row, line) -> line.count { it == 'O' } * (state.size - row) }
+fun Input.calcLoad(): Int =
+    withIndex().sumOf { (row, line) -> line.count { it == 'O' } * (size - row) }
 
 fun part2(input: Input): Any {
-    val cycles = 1000000000
 
-    var state = input
     val done = mutableMapOf<Input, Long>()
+    var state = input
     var step = 0L
 
     while (state !in done) {
         done[state] = step++
-        state = performCycle(state)
+        state = state.performCycle()
     }
-    val cycle = step - done[state]!!
+    return done.toList().single { it.second == (done[state]!!..<step).at(1000000000) }.first.calcLoad()
+}
 
-    val times = (cycles / cycle)
-    var last = (cycles - times * cycle)
-    while (last<done[state]!!) last+=cycle
-    return calcLoad(done.toList().single { it.second == last }.first)
+fun LongRange.at(n: Int): Long {
+    val size = last - first + 1
+    return n - (n / size - first / size - first / size) * size
 }
