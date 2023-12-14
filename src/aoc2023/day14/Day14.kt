@@ -2,17 +2,15 @@ package aoc2023.day14
 
 import aoc2023.Puzzle
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
 
 fun main() {
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
     puzzle.part1(105003)
-    puzzle.part2()
+    puzzle.part2(93742)
 }
 
-//data class Input(val todo: Int)
 typealias Input = List<String>
 
 fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
@@ -96,7 +94,6 @@ fun calcLoad(state: Input): Int =
     state.withIndex().sumOf { (row, line) -> line.count { it == 'O' } * (state.size - row) }
 
 fun part2(input: Input): Any {
-    check(input == toStrings(buildArray(input)))
     val cycles = 1000000000
 
     var state = input
@@ -109,12 +106,8 @@ fun part2(input: Input): Any {
     }
     val cycle = step - done[state]!!
 
-    step.logged("step")
-    cycle.logged("cycle")
-    val times = (cycles / cycle).logged("times")
-    val last = (cycles - times * cycle).logged("last")
-    (last + cycle * times).logged("check")
+    val times = (cycles / cycle)
+    var last = (cycles - times * cycle)
+    while (last<done[state]!!) last+=cycle
     return calcLoad(done.toList().single { it.second == last }.first)
 }
-// 94622 - wrong, too high
-// 94291 - too high
