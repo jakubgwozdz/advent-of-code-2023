@@ -1,14 +1,15 @@
 package aoc2023.day14
 
 import aoc2023.Puzzle
+import aoc2023.expect
 import aoc2023.getDay
 import aoc2023.readAndParse
 
 fun main() {
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
-    puzzle.part1(105003)
-    puzzle.part2(93742)
+    puzzle.part1().expect(105003)
+    puzzle.part2().expect(93742)
 }
 
 typealias Input = List<String>

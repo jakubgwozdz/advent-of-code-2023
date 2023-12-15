@@ -8,13 +8,10 @@ import java.io.File
 import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
-fun <R> execute(desc: String, expected: R? = null, part: () -> R?): TimedValue<Any?> {
+fun <R> execute(desc: String, part: () -> R?): TimedValue<Any?> {
     val t = measureTimedValue {
         try {
-            part().let {
-                if (expected != null && it != expected) "$it while expected $expected"
-                else it
-            }
+            part()
         } catch (e: Throwable) {
             e.printStackTrace()
             e.message
@@ -24,7 +21,10 @@ fun <R> execute(desc: String, expected: R? = null, part: () -> R?): TimedValue<A
     return t
 }
 
-fun TimedValue<Any?>.expect(expected: Any?) = this
+fun TimedValue<Any?>.expect(expected: Any?) = let {
+    if (it != expected) "$it while expected $expected"
+    else it
+}
 
 fun getDay(function: () -> Any?) = "day\\d+".toRegex().find(function.javaClass.name)?.value
 
