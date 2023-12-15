@@ -5,10 +5,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import kotlin.time.Duration
+import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
-fun <R> execute(desc: String, expected: R? = null, part: () -> R?): Duration {
+fun <R> execute(desc: String, expected: R? = null, part: () -> R?): TimedValue<Any?> {
     val t = measureTimedValue {
         try {
             part().let {
@@ -21,8 +21,10 @@ fun <R> execute(desc: String, expected: R? = null, part: () -> R?): Duration {
         }
     }
     println("$desc took ${t.duration.inWholeMicroseconds / 1000.0}ms and resulted with: ${t.value}")
-    return t.duration
+    return t
 }
+
+fun TimedValue<Any?>.expect(expected: Any?) = this
 
 fun getDay(function: () -> Any?) = "day\\d+".toRegex().find(function.javaClass.name)?.value
 

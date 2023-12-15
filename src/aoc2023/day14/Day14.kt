@@ -92,9 +92,9 @@ fun Input.calcLoad(): Int =
 
 fun part2(input: Input): Any {
 
-    val done = mutableMapOf<Input, Long>()
+    val done = mutableMapOf<Input, Int>()
     var state = input
-    var step = 0L
+    var step = 0
 
     while (state !in done) {
         done[state] = step++
@@ -103,7 +103,8 @@ fun part2(input: Input): Any {
     return done.toList().single { it.second == (done[state]!!..<step).at(1000000000) }.first.calcLoad()
 }
 
-fun LongRange.at(n: Int): Long {
+// TODO: fix sometime
+fun IntRange.at(n: Int): Int {
     val size = last - first + 1
     return n - (n / size - first / size - first / size) * size
 }
