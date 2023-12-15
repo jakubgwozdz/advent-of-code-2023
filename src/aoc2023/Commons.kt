@@ -22,7 +22,7 @@ fun <R> execute(desc: String, part: () -> R?): TimedValue<Any?> {
 }
 
 fun TimedValue<Any?>.expect(expected: Any?) = let {
-    if (it != expected) "$it while expected $expected"
+    if (it.value != expected) println("     \u001B[31m while expected $expected\u001B[0m")
     else it
 }
 
@@ -88,6 +88,9 @@ class Cache<K, V>(val map: MutableMap<K, V> = mutableMapOf()) : MutableMap<K, V>
 
     override fun toString() = "cache hits=$hits; misses=$misses"
 }
+
+fun IntRange.at(n: Int) = start + (n - start).mod(endInclusive - start + 1)
+fun LongRange.at(n: Long) = start + (n - start).mod(endInclusive - start + 1)
 
 //fun <T, R> List<T>.mapParallel(op: (T) -> R) = parallelStream().map { op(it) }.toList().toList()
 fun <T, R> List<T>.mapParallel(op: (T) -> R) = runBlocking { map { async(Dispatchers.Default) { op(it) } }.awaitAll() }

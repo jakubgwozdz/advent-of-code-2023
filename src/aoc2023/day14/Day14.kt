@@ -1,6 +1,7 @@
 package aoc2023.day14
 
 import aoc2023.Puzzle
+import aoc2023.at
 import aoc2023.expect
 import aoc2023.getDay
 import aoc2023.readAndParse
@@ -103,5 +104,3 @@ fun part2(input: Input): Any {
     }
     return done.toList().single { it.second == (done[state]!!..<step).at(1000000000) }.first.calcLoad()
 }
-
-fun IntRange.at(n: Int) = first + (n - first).mod(last - first + 1)
