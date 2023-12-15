@@ -21,18 +21,15 @@ fun String.hash(): Int = fold(0) { acc: Int, c: Char -> ((acc + c.code) * 17) % 
 fun part1(input: Input) = input.sumOf { it.hash() }
 
 fun part2(input: Input): Any {
-    val boxes = Array(256) { mutableMapOf<String, Int>() }
+    val boxes = List(256) { mutableMapOf<String, Int>() }
     input.forEach { op ->
         if (op.endsWith('-')) {
             val label = op.substringBefore('-')
-            val hash = label.hash()
-            boxes[hash].remove(label)
+            boxes[label.hash()].remove(label)
         }
         else {
             val label = op.substringBefore('=')
-            val value = op.substringAfter('=').toInt()
-            val hash = label.hash()
-            boxes[hash][label] = value
+            boxes[label.hash()][label] = op.substringAfter('=').toInt()
         }
     }
 

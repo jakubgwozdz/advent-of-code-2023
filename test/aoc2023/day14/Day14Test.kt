@@ -32,8 +32,4 @@ class Day14Test {
     fun part2test() {
         expect(64) { part2(parse(testInputStr)) }
     }
-
-//    @Test
-//    @Parametr
-//    fun atTestA() = expect(10) { (1..10).at(100)}
 }

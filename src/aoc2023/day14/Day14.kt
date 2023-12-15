@@ -104,8 +104,4 @@ fun part2(input: Input): Any {
     return done.toList().single { it.second == (done[state]!!..<step).at(1000000000) }.first.calcLoad()
 }
 
-// TODO: fix sometime
-fun IntRange.at(n: Int): Int {
-    val size = last - first + 1
-    return n - (n / size - first / size - first / size) * size
-}
+fun IntRange.at(n: Int) = first + (n - first).mod(last - first + 1)
