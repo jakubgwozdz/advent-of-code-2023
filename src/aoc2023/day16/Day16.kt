@@ -34,12 +34,17 @@ operator fun Entry.plus(d: Dir): Entry = when (d) {
     W -> Entry(r, c - 1, d)
 }
 
+operator fun Int.contains(dir: Dir) = this and (1 shl dir.ordinal) != 0
+operator fun Int.plus(dir: Dir) = this or (1 shl dir.ordinal)
+operator fun Array<IntArray>.contains(e: Entry) = e.dir in this[e.r][e.c]
+operator fun Array<IntArray>.plusAssign(e: Entry) { this[e.r][e.c] = this[e.r][e.c] + e.dir }
+
 fun Input.calc(start: Entry): Int {
-    val visited = mutableSetOf<Entry>()
+    val visited = Array(size) { IntArray(first().length) }
     val toGo = mutableListOf(start)
     while (toGo.isNotEmpty()) {
         val e = toGo.removeFirst()
-        if (e !in visited && e in this) {
+        if (e in this && e !in visited) {
             visited += e
             when (e.dir) {
                 N -> when (this[e]) {
@@ -72,7 +77,7 @@ fun Input.calc(start: Entry): Int {
             }
         }
     }
-    return visited.map { (r, c, _) -> r to c }.distinct().size
+    return indices.sumOf { r-> this[r].indices.count { c-> visited[r][c] != 0 } }
 }
 
 fun part1(input: Input) = input.calc(Entry(0, 0, E))
