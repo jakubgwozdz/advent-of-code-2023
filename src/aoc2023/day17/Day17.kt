@@ -23,7 +23,9 @@ typealias Input = List<String>
 fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
 
 enum class Dir { N, E, S, W }
-data class Pos(val r: Int, val c: Int)
+data class Pos(val r: Int, val c: Int) {
+    override fun toString(): String = "($r,$c)"
+}
 
 operator fun Pos.plus(d: Dir): Pos = when (d) {
     N -> Pos(r - 1, c)
@@ -47,66 +49,50 @@ operator fun Dir.unaryMinus() = when (this) {
     W -> E
 }
 
-data class State(val pos: Pos, val lastMoves: Pair<Dir, Int>)
-data class StateWithData(val state: State, val visited: Set<Pos>, val cost: Int)
+operator fun Input.contains(p: Pos) = p.r in this.indices && p.c in this[p.r].indices
+private operator fun Input.get(p: Pos) = this[p.r][p.c].digitToInt()
+
+typealias Key = Pair<Pos, Dir?>
+
+data class State(val pos: Pos, val lastMove: Dir?, val cost: Int) : Comparable<State> {
+    override fun compareTo(other: State): Int = this.cost.compareTo(other.cost)
+    val key: Key = pos to lastMove
+}
 
 fun part1(input: Input) = input.solve(1, 3)
 fun part2(input: Input) = input.solve(4, 10)
 
 fun Input.solve(minMoves: Int, maxMoves: Int): Int? {
-    val queue =
-        PriorityQueue<StateWithData>(compareBy<StateWithData> { it.cost + (it.state.pos.r + it.state.pos.c) * 1 })
-    val isEnd: (StateWithData) -> Boolean = { it.state.pos.r == lastIndex && it.state.pos.c == last().lastIndex }
-    val moves: (StateWithData) -> List<StateWithData> = { s ->
-        if (s.state.lastMoves.second in (1..<minMoves)) {
-            buildList {
-                val (lastDir, count) = s.state.lastMoves
-                val newPos = s.state.pos + lastDir
-                if (newPos.r in this@solve.indices && newPos.c in this@solve[newPos.r].indices) {
-                    val newLastMoves = lastDir to count + 1
-                    val newState = State(newPos, newLastMoves)
-                    add(
-                        StateWithData(
-                            newState,
-                            s.visited + newPos,
-                            s.cost + this@solve[newPos.r][newPos.c].digitToInt()
-                        )
-                    )
-                }
+    val queue = PriorityQueue(compareBy<State> { it.cost })
+    val isEnd: (State) -> Boolean = { it.pos.r == lastIndex && it.pos.c == last().lastIndex }
+    val moves: (State) -> List<State> = { s ->
+        buildList {
+            val dirs = when (s.lastMove) {
+                E, W -> listOf(S, N)
+                N, S -> listOf(E, W)
+                null -> listOf(S, E)
             }
-        } else buildList {
-            val (lastDir, count) = s.state.lastMoves
-            val back = -lastDir
-            val last3dir = if (count >= maxMoves) lastDir else null
-
-            Dir.entries.forEach { dir ->
-                val newPos = s.state.pos + dir
-                if (dir != back && dir != last3dir &&
-                    newPos !in s.visited &&
-                    newPos.r in this@solve.indices && newPos.c in this@solve[newPos.r].indices
-                ) {
-                    val newLastMoves = dir to if (dir == lastDir) count + 1 else 1
-                    val newState = State(newPos, newLastMoves)
-                    add(
-                        StateWithData(
-                            newState,
-                            s.visited + newPos,
-                            s.cost + this@solve[newPos.r][newPos.c].digitToInt()
-                        )
-                    )
+            dirs.forEach { dir ->
+                var nextPos = s.pos + dir
+                var i = 0
+                var nextCost = s.cost
+                while ((i < maxMoves) && (nextPos in this@solve)) {
+                    i++
+                    nextCost += this@solve[nextPos]
+                    if (i >= minMoves) add(State(nextPos, dir, nextCost))
+                    nextPos += dir
                 }
             }
         }
     }
-    val besties = mutableMapOf<State, Int>()
-    val isBetter: (StateWithData) -> Boolean = {
-        besties[it.state]
+    val besties = mutableMapOf<Key, Int>()
+    val isBetter: (State) -> Boolean = {
+        besties[it.key]
             .let { b -> b == null || b > it.cost }
-            .also { better -> if (better) besties[it.state] = it.cost }
+            .also { better -> if (better) besties[it.key] = it.cost }
     }
-
     return search(
-        StateWithData(State(Pos(0, 0), E to 0), emptySet(), 0),
+        State(Pos(0, 0), null, 0),
         moves,
         { it.cost },
         isBetter,
@@ -128,12 +114,8 @@ fun <T : Any, R : Comparable<R>> search(
     while (toGo.isNotEmpty()) {
         val next = toGo.poll()
         val value = valueOp(next)
-        if (worth(next)) {
-            if (isEnd(next)) {
-                if (min == null || value < min) min = value
-            } else {
-                moves(next).forEach(toGo::offer)
-            }
+        if (worth(next) && (min == null || value < min)) {
+            if (isEnd(next)) min = value else moves(next).forEach(toGo::offer)
         }
     }
     return min
