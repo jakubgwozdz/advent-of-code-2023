@@ -95,3 +95,60 @@ fun LongRange.at(n: Long) = start + (n - start).mod(endInclusive - start + 1)
 //fun <T, R> List<T>.mapParallel(op: (T) -> R) = parallelStream().map { op(it) }.toList().toList()
 fun <T, R> List<T>.mapParallel(op: (T) -> R) = runBlocking { map { async(Dispatchers.Default) { op(it) } }.awaitAll() }
 //fun <T, R> List<T>.mapParallel(op: (T) -> R) = map { op(it) }
+
+fun <T : Any, R : Any> bfs(
+    graphOp: (T, R) -> Iterable<T>,
+    start: T,
+    initial: R,
+    moveOp: (R, T) -> R,
+    endOp: (T) -> Boolean,
+    queue: Queue<Pair<T, R>> = Queue(),
+): R? {
+    val visited = mutableSetOf<T>()
+    queue.offer(start to initial)
+    var result: R? = null
+    while (result == null && queue.isNotEmpty()) {
+        val (curr, len) = queue.poll()
+        graphOp(curr, len).forEach { next ->
+            when {
+                endOp(next) -> result = moveOp(len, next)
+                next !in visited -> {
+                    visited += next
+                    queue.offer(next to moveOp(len, next))
+                }
+            }
+        }
+    }
+    return result
+}
+
+open class Queue<E : Any> {
+
+    protected var queue: ArrayList<E> = ArrayList(11)
+
+    val size get() = queue.size
+
+    fun isNotEmpty(): Boolean = size > 0
+
+    fun poll(): E {
+        check(size > 0)
+        return queue.removeAt(0)
+    }
+
+    open fun offer(e: E) {
+        queue.add(e)
+    }
+
+}
+
+
+class PriorityQueue<E : Any>(val comparator: Comparator<E>) : Queue<E>() {
+
+    override fun offer(e: E) {
+        val index = queue.binarySearch(e, comparator).let {
+            if (it < 0) -it - 1 else it
+        }
+        queue.add(index, e)
+    }
+
+}
