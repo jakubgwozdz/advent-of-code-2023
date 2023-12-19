@@ -1,7 +1,10 @@
 package aoc2023.day10
 
 import aoc2023.Puzzle
-import aoc2023.day10.Move.*
+import aoc2023.day10.Move.E
+import aoc2023.day10.Move.N
+import aoc2023.day10.Move.S
+import aoc2023.day10.Move.W
 import aoc2023.getDay
 import aoc2023.readAndParse
 import kotlin.math.absoluteValue
@@ -27,7 +30,7 @@ typealias Input = List<Move>
 
 operator fun List<String>.get(pos: Pos): Char = getOrNull(pos.first)?.getOrNull(pos.second) ?: '.'
 
-fun parse(inputStr: String, cheat: Char = '|'): Input {
+fun parse(inputStr: String): Input {
     val lines = inputStr.lines()
     val start: Pos = lines.indices.asSequence()
         .flatMap { row -> lines[row].indices.map { row to it } }

@@ -1,9 +1,5 @@
 package aoc2023.day10
 
-import aoc2023.day10.Move.E
-import aoc2023.day10.Move.N
-import aoc2023.day10.Move.S
-import aoc2023.day10.Move.W
 import org.junit.jupiter.api.Timeout
 import kotlin.test.Test
 import kotlin.test.expect
@@ -24,7 +20,7 @@ class Day10Test {
             .L--J.L--J.
             ...........
         """.trimIndent()
-        expect(4) { part2(parse(testInputStr, 'F')) }
+        expect(4) { part2(parse(testInputStr)) }
     }
 
     @Test
@@ -41,7 +37,7 @@ class Day10Test {
             .L--JL--J.
             ..........
         """.trimIndent()
-        expect(4) { part2(parse(testInputStr, 'F')) }
+        expect(4) { part2(parse(testInputStr)) }
     }
 
     @Test
@@ -59,7 +55,7 @@ class Day10Test {
             ....FJL-7.||.||||...
             ....L---J.LJ.LJLJ...
         """.trimIndent()
-        expect(8) { part2(parse(testInputStr, 'F')) }
+        expect(8) { part2(parse(testInputStr)) }
     }
 
     @Test
@@ -77,7 +73,7 @@ class Day10Test {
             L.L7LFJ|||||FJL7||LJ
             L7JLJL-JLJLJL--JLJ.L
         """.trimIndent()
-        expect(10) { part2(parse(testInputStr, '7')) }
+        expect(10) { part2(parse(testInputStr)) }
     }
 
 

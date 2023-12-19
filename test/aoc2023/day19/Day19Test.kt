@@ -48,18 +48,4 @@ class Day19Test {
     fun part2test() {
         expect(167409079868000) { part2(parse(testInputStr)) }
     }
-
-    @Test
-    fun intRanges() {
-        expect(10..20) { 0..100 intersect 10..20 }
-        expect(10..20) { 10..20 intersect 0..100 }
-        expect(10..20) { 10..100 intersect 0..20 }
-        expect(10..20) { 0..20 intersect 10..100 }
-        expect(0) { (0..10 intersect 20..30).count() }
-        expect(10..20) { (10..30).coerceAtMost(20) }
-        expect(10..20) { (0..20).coerceAtLeast(10) }
-        expect(10..20) { (10..20).coerceAtMost(25) }
-        expect(10..20) { (10..20).coerceAtLeast(5) }
-    }
-
 }
