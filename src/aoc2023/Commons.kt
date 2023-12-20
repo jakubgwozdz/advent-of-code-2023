@@ -13,7 +13,7 @@ fun <R> execute(desc: String, part: () -> R?): TimedValue<Any?> {
         try {
             part()
         } catch (e: Throwable) {
-            e.printStackTrace()
+//            e.printStackTrace()
             e.message
         }
     }
@@ -33,8 +33,8 @@ fun <T> readAndParse(filename: String, parseOp: (String) -> T) = File(filename).
 fun <T> String.tryMatch(regex: Regex, op: (MatchResult.Destructured) -> T) =
     regex.matchEntire(this)?.destructured?.let(op)
 
-inline fun <T : Any?> T.logged(prefixOp: () -> Any? = { "" }) = also { v ->
-    prefixOp().toString().let { if (it.isNotEmpty()) println("$it: $v") else println(v) }
+inline fun <T : Any?> T.logged(prefixOp: (T) -> Any? = { "" }) = also { v ->
+    prefixOp(v).toString().let { if (it.isNotEmpty()) println("$it: $v") else println(v) }
 }
 
 fun <T : Any?> T.logged(prefix: Any?) = logged { prefix }
