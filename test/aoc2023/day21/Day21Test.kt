@@ -10,22 +10,23 @@ class Day21Test {
     val testInput: Input? = null
 
     val testInputStr = """
-        42
+        ...........
+        .....###.#.
+        .###.##..#.
+        ..#.#...#..
+        ....#.#....
+        .##..S####.
+        .##..#...#.
+        .......##..
+        .##.#.####.
+        .##..##.##.
+        ...........
     """.trimIndent()
-
-
-    @Test
-    @Timeout(1)
-    @Ignore
-    fun parseTest() {
-        expect(testInput) { parse(testInputStr) }
-    }
 
     @Test
     @Timeout(5)
-    @Ignore
     fun part1test() {
-        expect(226) { part1(parse(testInputStr)) }
+        expect(16) { part1(parse(testInputStr),6) }
     }
 
     @Test
