@@ -25,22 +25,22 @@ class Day21Test {
 
     @Test
     fun test6() {
-        expect(16L) { calc(parse(testInputStr),6) }
+        expect(16L) { parse(testInputStr).calc(6) }
     }
 
     @Test
     fun test10() {
-        expect(50L) { calc(parse(testInputStr),10) }
+        expect(50L) { parse(testInputStr).calc(10) }
     }
 
     @Test
     fun test50() {
-        expect(1594L) { calc(parse(testInputStr),50) }
+        expect(1594L) { parse(testInputStr).calc(50) }
     }
 
     @Test
     fun test5000() {
-        expect(16733044L) { calc(parse(testInputStr),5000) }
+        expect(16733044L) { parse(testInputStr).calc(5000) }
     }
 
 }
