@@ -13,6 +13,7 @@ fun main() {
     puzzle.part2()
     // 1240757633899542 too high
     // 620389562662470 too high
+    // 619652852416751 too high
 }
 
 typealias Input = List<String>
