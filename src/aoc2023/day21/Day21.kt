@@ -3,17 +3,13 @@ package aoc2023.day21
 import aoc2023.Puzzle
 import aoc2023.expect
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
 
 fun main() {
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
-    puzzle.part1().expect(3751L)
-    puzzle.part2()
-    // 1240757633899542 too high
-    // 620389562662470 too high
-    // 619652852416751 too high
+    puzzle.part1().expect(3751)
+    puzzle.part2().expect(619407349431167)
 }
 
 typealias Input = List<String>
@@ -22,31 +18,14 @@ fun parse(inputStr: String): Input {
     return inputStr.lines().filterNot { it.isBlank() }
 }
 
-fun part1(input: Input) = input.calc(64)
+fun part1(input: Input) = input.calc(64).single()
 
 fun part2(input: Input): Any {
-//    repeat(10) {
-//        input.calc(input.size * it - 1).logged(input.size * it - 1)
-//    }
+    val cycle = input.size
+    val times = 26501365 / cycle
+    val rest = 26501365 % cycle
 
-    val cycle = (input.size * 2)
-        .logged("cycle")
-    val times = (26501365 / cycle)
-        .logged("times")
-    val rest = (26501365 % cycle)
-        .logged("rest")
-    // f(n * cycle - 1) = n^2 * f(cycle - 1)
-    input.calc(cycle - 1)
-        .logged("calc(cycle-1)")
-
-    fun f(n: Int) = input.calc(n * cycle + rest)
-
-    val f1 = f(1)
-        .logged("f(1) = calc(cycle+rest)")
-    val f2 = f(2)
-        .logged("f(2) = calc(2*cycle+rest)")
-    val f3 = f(3)
-        .logged("f(3) = calc(3*cycle+rest)")
+    val (f1, f2, f3) = input.calc(cycle + rest, 2 * cycle + rest, 3 * cycle + rest)
 
     // f(n) = n^2 * x + n * y + z
 
@@ -54,34 +33,34 @@ fun part2(input: Input): Any {
     // f2 = 4x + 2y + z
     // f3 = 9x + 3y + z
 
-    val x = ((f1 + f3 - 2 * f2) / 2)
-        .logged("x")
+    val x = ((f1 + f3 - 2 * f2) / 2L)
     val y = (f2 - f1 - 3 * x)
-        .logged("y")
     val z = (f1 - x - y)
-        .logged("z")
-
-    fun g(n: Int) = x * n * n + y * n + z
-
-    repeat(10) {
-        f(it).logged("f($it)")
-        g(it).logged("g($it)")
-    }
-    return g(times)
+    return x * times * times + y * times + z
 }
 
-fun Input.calc(steps: Int): Long {
-    check(all { it.length == size })
-    val array45 = Array(size * 2) { BooleanArray(size * 2) }
-    array45.indices.forEach { r45 ->
-        array45[r45].indices.forEach { c45 ->
-            if (r45 % 2 == c45 % 2) array45[r45][c45] =
-                this[((r45 + c45 + size) / 2).mod(size)][((r45 - c45 + size) / 2).mod(size)] != '#'
-        }
+data class Pos(val r: Int, val c: Int)
+
+fun Pos.moves() = listOf(
+    Pos(r - 1, c),
+    Pos(r, c + 1),
+    Pos(r + 1, c),
+    Pos(r, c - 1),
+)
+
+fun Input.calc(vararg steps: Int): List<Int> {
+    val result = mutableMapOf<Int, Int>()
+    val initial: Pos = indexOfFirst { it.contains("S") }.let { r -> Pos(r, this[r].indexOf('S')) }
+
+    val found = mutableMapOf(-1 to emptySet(), 0 to setOf(initial))
+    val sums = mutableMapOf(-1 to 0, 0 to 1)
+
+    (1..steps.max()).forEach {
+        found[it] = found[it - 1]!!.flatMap { p ->
+            p.moves().filter { (r, c) -> this[r.mod(this.size)][c.mod(this.size)] != '#' }
+        }.toSet() - found[it - 2]!!
+        sums[it] = found[it]!!.count() + sums[it - 2]!!
+        if (it in steps) result[it] = sums[it]!!
     }
-
-    val p = size - steps..size + steps step 2
-    return p.sumOf { r -> p.count { c -> array45[r.mod(size * 2)][c.mod(size * 2)] } }.toLong()
-
+    return result.values.toList()
 }
-
