@@ -42,8 +42,24 @@ fun part1(input: Input): Int = calc(input) { pos, ch ->
 
 fun part2(input: Input): Int = calc(input)
 
-data class State(val id: Int, val visited: Long = 1L shl id, val length: Int = 0) {
-    fun go(i: Int, l: Int) = State(i, visited or (1L shl i), length + l)
+typealias Visited = Triple<Long, Long, Long> // triple to accommodate 154 bits for part 1
+
+fun Visited.add(id: Int) = when (id) {
+    in (0..63) -> copy(first = first or (1L shl id))
+    in (64..127) -> copy(second = second or (1L shl (id - 64)))
+    else -> copy(third = third or (1L shl (id - 128)))
+}
+
+operator fun Visited.contains(id: Int) = when (id) {
+    in (0..63) -> first and (1L shl id)
+    in (64..127) -> second and (1L shl (id - 64))
+    else -> third and (1L shl (id - 128))
+} != 0L
+
+
+data class State(val id: Int, val visited: Visited = Visited(0, 0, 0).add(id), val length: Int = 0) {
+    fun go(i: Int, l: Int) = State(i, visited.add(i), length + l)
+    val key = id to visited
 }
 
 private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> pos.adjacents() }): Int {
@@ -65,16 +81,10 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> p
     val start = ids.entries.single { it.key.r == 0 }.value
     val end = ids.entries.single { it.key.r == input.lastIndex }.value
 
-//    val dp = mutableMapOf<String, Int>()
-
     return DeepRecursiveFunction<State, Int> { state ->
-//        val prev = 0//dp[state.key] ?: 0
-//        if (prev <= state.length) {
-//            dp[state.key] = state.length
         if (state.id == end) state.length
-        else graph2[state.id]!!.filterNot { (i, l) -> state.visited and (1L shl i) != 0L }
+        else graph2[state.id]!!.filterNot { (i, l) -> i in state.visited }
             .maxOfOrNull { callRecursive(state.go(it.first, it.second)) } ?: 0
-//        } else 0
     }(State(start))
 }
 
