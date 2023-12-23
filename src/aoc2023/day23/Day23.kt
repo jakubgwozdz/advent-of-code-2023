@@ -43,9 +43,9 @@ fun part1(input: Input): Int = calc(input) { pos, ch ->
     }
 }
 
-fun part2(input: Input): Int = calc(input) { pos, _ -> pos.adjacents() }
+fun part2(input: Input): Int = calc(input)
 
-private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos>): Int {
+private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> pos.adjacents() }): Int {
     val graph0 = input.asSequence()
         .flatMapIndexed { r, l -> l.mapIndexed { c, ch -> Pos(r, c) to ch } }
         .filter { (_, ch) -> ch != '#' }
@@ -53,8 +53,8 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos>): Int {
             pos to movesOp(pos, ch).filter { (r, c) -> r in input.indices && input[r][c] != '#' }
         }
 
-    graph0.keys.buildImage(input.size, input[0].length)
-    val graph1 = graph0.filterValues { it.size != 2 }.keys.associateWith(graph0::simplePath)
+    val graph1 = graph0.filterValues { it.size != 2 }.keys.associateWith(graph0::simplePaths)
+//    graph1.tgf()
 
     val start = Pos(0, 1)
     val end = input.lastIndex.let { r -> r to input[r].lastIndex - 1 }
@@ -66,7 +66,7 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos>): Int {
     }(State(start))
 }
 
-private fun Map<Pos, List<Pos>>.simplePath(v: Pos) = this[v]!!.map { p ->
+private fun Map<Pos, List<Pos>>.simplePaths(v: Pos) = this[v]!!.map { p ->
     var l = 1
     var p0 = v
     var p1 = p
