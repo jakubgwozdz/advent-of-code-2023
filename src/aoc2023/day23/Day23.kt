@@ -42,24 +42,24 @@ fun part1(input: Input): Int = calc(input) { pos, ch ->
 
 fun part2(input: Input): Int = calc(input)
 
-typealias Visited = Triple<Long, Long, Long> // triple to accommodate 154 bits for part 1
+typealias Visited = LongArray
 
-fun Visited.add(id: Int) = when (id) {
-    in (0..63) -> copy(first = first or (1L shl id))
-    in (64..127) -> copy(second = second or (1L shl (id - 64)))
-    else -> copy(third = third or (1L shl (id - 128)))
+fun Visited.add(id: Int) {
+    val i = id / 64
+    val o = id % 64
+    this[i] = this[i] or (1L shl o)
 }
 
-operator fun Visited.contains(id: Int) = when (id) {
-    in (0..63) -> first and (1L shl id)
-    in (64..127) -> second and (1L shl (id - 64))
-    else -> third and (1L shl (id - 128))
-} != 0L
+fun Visited.remove(id: Int) {
+    val i = id / 64
+    val o = id % 64
+    this[i] = this[i] and (1L shl o).inv()
+}
 
-
-data class State(val id: Int, val visited: Visited = Visited(0, 0, 0).add(id), val length: Int = 0) {
-    fun go(i: Int, l: Int) = State(i, visited.add(i), length + l)
-    val key = id to visited
+operator fun Visited.contains(id: Int): Boolean {
+    val i = id / 64
+    val o = id % 64
+    return this[i] and (1L shl o) != 0L
 }
 
 private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> pos.adjacents() }): Int {
@@ -81,11 +81,25 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> p
     val start = ids.entries.single { it.key.r == 0 }.value
     val end = ids.entries.single { it.key.r == input.lastIndex }.value
 
-    return DeepRecursiveFunction<State, Int> { state ->
-        if (state.id == end) state.length
-        else graph2[state.id]!!.filterNot { (i, l) -> i in state.visited }
-            .maxOfOrNull { callRecursive(state.go(it.first, it.second)) } ?: 0
-    }(State(start))
+    val visited = Visited(3) // triple to accommodate 154 bits for part 1
+    var current = start
+    var length = 0
+
+    fun test():Int = if (current == end) length
+        else graph2[current]!!.filterNot { (id) -> id in visited }
+            .maxOfOrNull { (id, l)->
+                val oldLength = length
+                val oldId = current
+                length += l
+                current = id
+                visited.add(id)
+                test().also {
+                    visited.remove(id)
+                    current = oldId
+                    length = oldLength
+                }
+            } ?: 0
+    return test()
 }
 
 private fun Map<Pos, List<Pos>>.simplePaths(v: Pos) = this[v]!!.map { p ->
