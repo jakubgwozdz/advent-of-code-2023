@@ -3,6 +3,7 @@ package aoc2023.day23
 import aoc2023.Puzzle
 import aoc2023.expect
 import aoc2023.getDay
+import aoc2023.logged
 import aoc2023.readAndParse
 
 fun main() {
@@ -28,10 +29,6 @@ val Pos.E: Pos get() = r to c + 1
 
 fun Pos.adjacents() = listOf(N, W, S, E)
 
-data class State(val pos: Pos, val visited: Set<Pos> = setOf(pos), val length: Int = 0)
-
-fun State.go(p: Pos, l: Int) = State(p, visited + p, length + l)
-
 fun part1(input: Input): Int = calc(input) { pos, ch ->
     when (ch) {
         '.' -> pos.adjacents()
@@ -45,6 +42,10 @@ fun part1(input: Input): Int = calc(input) { pos, ch ->
 
 fun part2(input: Input): Int = calc(input)
 
+data class State(val id: Int, val visited: Long = 1L shl id, val length: Int = 0) {
+    fun go(i: Int, l: Int) = State(i, visited or (1L shl i), length + l)
+}
+
 private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> pos.adjacents() }): Int {
     val graph0 = input.asSequence()
         .flatMapIndexed { r, l -> l.mapIndexed { c, ch -> Pos(r, c) to ch } }
@@ -55,14 +56,25 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> p
 
     val graph1 = graph0.filterValues { it.size != 2 }.keys.associateWith(graph0::simplePaths)
 //    graph1.tgf()
+    graph1.size.logged("size")
+    val ids = graph1.keys.withIndex().associate { (id, pos) -> pos to id }
+    val graph2 = graph1
+        .map { (p, v) -> ids[p]!! to v.map { (p2, l) -> ids[p2]!! to l } }
+        .toMap()
 
-    val start = Pos(0, 1)
-    val end = input.lastIndex.let { r -> r to input[r].lastIndex - 1 }
+    val start = ids.entries.single { it.key.r == 0 }.value
+    val end = ids.entries.single { it.key.r == input.lastIndex }.value
+
+//    val dp = mutableMapOf<String, Int>()
 
     return DeepRecursiveFunction<State, Int> { state ->
-        if (state.pos == end) state.length
-        else graph1[state.pos]!!.filterNot { it.first in state.visited }
+//        val prev = 0//dp[state.key] ?: 0
+//        if (prev <= state.length) {
+//            dp[state.key] = state.length
+        if (state.id == end) state.length
+        else graph2[state.id]!!.filterNot { (i, l) -> state.visited and (1L shl i) != 0L }
             .maxOfOrNull { callRecursive(state.go(it.first, it.second)) } ?: 0
+//        } else 0
     }(State(start))
 }
 
