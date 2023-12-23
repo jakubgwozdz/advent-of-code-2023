@@ -88,4 +88,3 @@ fun settle(sorted: List<Brick>, op: Op): List<Brick> {
     }
     return settled.values.sortedBy { it.zs.first }
 }
-
