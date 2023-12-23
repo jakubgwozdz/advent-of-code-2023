@@ -1,7 +1,5 @@
 package aoc2023.day23
 
-import org.junit.jupiter.api.Timeout
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.expect
 
@@ -41,10 +39,8 @@ class Day23Test {
     }
 
     @Test
-    @Timeout(5)
-    @Ignore
     fun part2test() {
-        expect(3) { part2(parse(testInputStr)) }
+        expect(154) { part2(parse(testInputStr)) }
     }
 
 }
