@@ -3,7 +3,6 @@ package aoc2023.day23
 import aoc2023.Puzzle
 import aoc2023.expect
 import aoc2023.getDay
-import aoc2023.logged
 import aoc2023.readAndParse
 
 fun main() {
@@ -72,11 +71,11 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> p
 
     val graph1 = graph0.filterValues { it.size != 2 }.keys.associateWith(graph0::simplePaths)
 //    graph1.tgf()
-    graph1.size.logged("size")
     val ids = graph1.keys.withIndex().associate { (id, pos) -> pos to id }
     val graph2 = graph1
         .map { (p, v) -> ids[p]!! to v.map { (p2, l) -> ids[p2]!! to l } }
-        .toMap()
+        .sortedBy { it.first }
+        .map { it.second }
 
     val start = ids.entries.single { it.key.r == 0 }.value
     val end = ids.entries.single { it.key.r == input.lastIndex }.value
@@ -85,20 +84,21 @@ private fun calc(input: Input, movesOp: (Pos, Char) -> List<Pos> = { pos, _ -> p
     var current = start
     var length = 0
 
-    fun test():Int = if (current == end) length
-        else graph2[current]!!.filterNot { (id) -> id in visited }
-            .maxOfOrNull { (id, l)->
-                val oldLength = length
-                val oldId = current
-                length += l
-                current = id
-                visited.add(id)
-                test().also {
-                    visited.remove(id)
-                    current = oldId
-                    length = oldLength
-                }
-            } ?: 0
+    fun test(): Int = if (current == end) length
+    else graph2[current]
+        .filterNot { (id) -> id in visited }
+        .maxOfOrNull { (id, l) ->
+            val oldLength = length
+            val oldId = current
+            length += l
+            current = id
+            visited.add(id)
+            test().also {
+                visited.remove(id)
+                current = oldId
+                length = oldLength
+            }
+        } ?: 0
     return test()
 }
 
