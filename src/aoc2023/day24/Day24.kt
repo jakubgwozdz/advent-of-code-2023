@@ -1,15 +1,17 @@
 package aoc2023.day24
 
 import aoc2023.Puzzle
+import aoc2023.expect
 import aoc2023.getDay
+import aoc2023.logged
 import aoc2023.readAndParse
 import kotlin.math.sign
 
 fun main() {
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
-    puzzle.part1()
-    puzzle.part2()
+    puzzle.part1().expect(31921)
+    puzzle.part2().expect(761691907059631)
 }
 
 data class Pos(val x: Long, val y: Long, val z: Long) {
@@ -18,6 +20,7 @@ data class Pos(val x: Long, val y: Long, val z: Long) {
 
 data class Hailstone(val p: Pos, val v: Pos) {
     override fun toString(): String = "$p @ $v"
+    fun atTime(t: Long) = Pos(p.x + t * v.x, p.y + t * v.y, p.z + t * v.z)
 }
 
 typealias Input = List<Hailstone>
@@ -31,8 +34,6 @@ fun parse(inputStr: String): Input = inputStr.lines().filterNot { it.isBlank() }
 
 fun part1(input: Input, range: LongRange = 200000000000000..400000000000000) =
     input.indices.sumOf { ia -> (ia..input.lastIndex).count { ib -> calc2d(input[ia], input[ib], range) } }
-
-data class Line(val p: Pos, val v: Pos)
 
 fun calc2d(a: Hailstone, b: Hailstone, range: LongRange): Boolean {
     val m1 = a.v.y.toDouble() / a.v.x
@@ -50,34 +51,28 @@ fun calc2d(a: Hailstone, b: Hailstone, range: LongRange): Boolean {
     val result = x >= range.first && x <= range.last && y >= range.first && y <= range.last &&
             (x - a.p.x).sign == a.v.x.toDouble().sign && (y - a.p.y).sign == a.v.y.toDouble().sign &&
             (x - b.p.x).sign == b.v.x.toDouble().sign && (y - b.p.y).sign == b.v.y.toDouble().sign
-//    (x to y to result).logged("$a vs $b")
-
     return result
-
-
-//    return if (a.v.x == b.v.x && a.p.x == b.v.y) false else if (a.v.x == b.v.x && a.v.y == b.v.y) false else {
-//        // x = a.p.x + ta * a.v.x
-//        // x = b.p.x + tb * b.v.x
-//        // y = a.p.y + ta * a.v.y
-//        // y = b.p.y + tb * b.v.y
-//        //
-//        // (x - a.p.x) / a.v.x == (y - a.p.y) / a.v.y  =>  (x - a.p.x) * a.v.y / a.v.x + a.p.y = y
-//        // (x - b.p.x) / b.v.x == (y - b.p.y) / b.v.y  =>  (x - b.p.x) * b.v.y / b.v.x + b.p.y = y
-//        //
-//        // (x - a.p.x) * a.v.y / a.v.x + a.p.y = (x - b.p.x) * b.v.y / b.v.x + b.p.y
-//        // x * (a.v.y / a.v.x - b.v.y / b.v.x) =
-//        val x = if (a.v.x == 0L) a.p.x.toDouble() else if (b.v.x == 0L) b.p.x.toDouble() else {
-//            (a.p.x.toDouble() * a.v.y / a.v.x - b.p.x.toDouble() * b.v.y / b.v.x + b.p.y) /
-//                    (a.v.y.toDouble() / a.v.x - b.v.y.toDouble() / b.v.x) - a.p.y
-//        }
-//        val y =
-//            if (a.v.y == 0L) a.p.y.toDouble() else if (b.v.y == 0L) b.p.y.toDouble() else (x - a.p.x) * a.v.y / a.v.x + a.p.y
-//        (x to y).logged("$a vs $b")
-//        x >= range.first && x <= range.last && y >= range.first && y <= range.last
-//    }
 }
 
+fun part2(input: Input): Long {
+    val pivot = input.first { h ->
+        input.all { h2 ->
+            h.v.x == h2.v.x && h.p.x == h2.p.x ||
+                    h.v.x != h2.v.x && (h.p.x - h2.p.x) % (h2.v.x - h.v.x) == 0L
+        }
+    }.logged("pivot")
 
-fun part2(input: Input): Any? = null // TODO("part 2 with ${input.toString().length} data")
+    val (a, b) = input
+    val ta = (a.p.x - pivot.p.x) / (pivot.v.x - a.v.x).logged("ta")
+    val tb = (b.p.x - pivot.p.x) / (pivot.v.x - b.v.x).logged("tb")
+    val a1 = a.atTime(ta)
+    val b1 = b.atTime(tb)
+    val dx = b1.x - a1.x
+    val dy = b1.y - a1.y
+    val dz = b1.z - a1.z
+    val px = a1.x + dx / (ta - tb) * ta
+    val py = a1.y + dy / (ta - tb) * ta
+    val pz = a1.z + dz / (ta - tb) * ta
 
-
+    return px+py+pz
+}
