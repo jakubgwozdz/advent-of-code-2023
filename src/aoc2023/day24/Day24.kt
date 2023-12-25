@@ -63,8 +63,8 @@ fun part2(input: Input): Long {
     }.logged("pivot")
 
     val (a, b) = input
-    val ta = (a.p.x - pivot.p.x) / (pivot.v.x - a.v.x).logged("ta")
-    val tb = (b.p.x - pivot.p.x) / (pivot.v.x - b.v.x).logged("tb")
+    val ta = (a.p.x - pivot.p.x) / (pivot.v.x - a.v.x)
+    val tb = (b.p.x - pivot.p.x) / (pivot.v.x - b.v.x)
     val a1 = a.atTime(ta)
     val b1 = b.atTime(tb)
     val dx = b1.x - a1.x

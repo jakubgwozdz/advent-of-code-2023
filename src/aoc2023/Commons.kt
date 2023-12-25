@@ -71,12 +71,10 @@ tailrec fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
 fun lcm(a: Long, b: Long): Long = a / gcd(a, b) * b
 
 inline fun <T, R> cachedDeepRecursiveFunction(
-    cache: MutableMap<T, R> = mutableMapOf(),
-    crossinline block: suspend DeepRecursiveScope<T, R>.(T) -> R
-): DeepRecursiveFunction<T, R> =
-    DeepRecursiveFunction { value ->
-        cache[value] ?: block(value).also { cache[value] = it }
-    }
+    cache: MutableMap<T, R> = mutableMapOf(), crossinline block: suspend DeepRecursiveScope<T, R>.(T) -> R
+): DeepRecursiveFunction<T, R> = DeepRecursiveFunction { value ->
+    cache[value] ?: block(value).also { cache[value] = it }
+}
 
 class Cache<K, V>(val map: MutableMap<K, V> = mutableMapOf()) : MutableMap<K, V> by map {
     var hits = 0L
@@ -150,5 +148,14 @@ class PriorityQueue<E : Any>(val comparator: Comparator<E>) : Queue<E>() {
         }
         queue.add(index, e)
     }
+}
 
+fun <T> Map<T, Iterable<T>>.reachable(start: T): Set<T> {
+    val reachable = mutableSetOf<T>()
+    fun append(node: T) {
+        reachable += node
+        this[node]?.filter { it !in reachable }?.forEach { append(it) }
+    }
+    append(start)
+    return reachable.toSet()
 }

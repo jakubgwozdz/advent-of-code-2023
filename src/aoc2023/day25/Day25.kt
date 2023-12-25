@@ -1,15 +1,17 @@
 package aoc2023.day25
 
 import aoc2023.Puzzle
-import aoc2023.Queue
+import aoc2023.expect
 import aoc2023.getDay
 import aoc2023.logged
+import aoc2023.reachable
 import aoc2023.readAndParse
+import kotlin.random.Random
 
 fun main() {
     val input = readAndParse("local/${getDay {}}_input.txt", ::parse)
     val puzzle = Puzzle(input, ::part1, ::part2)
-    puzzle.part1()
+    puzzle.part1().expect(552695)
     puzzle.part2()
 }
 
@@ -28,36 +30,35 @@ fun parse(inputStr: String): Input = buildMap<String, MutableList<String>> {
 //    .also { it.tgf("local/day25.tgf") }
 
 fun part1(input: Input): Int {
-    val vertices = input.keys.toList()
-    vertices.indices.forEach { i ->
-        val vi = vertices[i]
-        (i + 1..<vertices.size).forEach { j ->
-            val vj = vertices[i]
-            (j + 1..<vertices.size).forEach { k ->
-                val vk = vertices[i]
-                val reachable = mutableSetOf<String>()
-                val toGo = Queue<String>()
-                toGo.offer(vertices.first())
-                while (toGo.isNotEmpty()) {
-                    val v = toGo.poll()
-                    val boring = v != vi && v != vj && v != vk
-                    if (v !in reachable) {
-                        reachable += v
-                        val candidates = input[v]!!
-                        candidates.forEach {
-                            if (boring || it != vi && it != vj && it != vk)
-                                if (it !in reachable) toGo.offer(it)
-                        }
-                    }
-                }
-                if (reachable.size < input.size) return reachable.size * (input.size - reachable.size)
-            }
-        }
-        "$vi ($i of ${vertices.size})".logged("i")
-    }
-    TODO()
-}
+    val nodes = input.keys.toList()
+    val edges = input.flatMap { (k, l) -> l.map { if (k < it) k to it else it to k } }.toSet()
 
+    fun krager(): Set<Pair<String, String>> {
+        val random = Random(0)
+        // Krager's algorithm
+        while (true) {
+            val labeledEdges = edges.associateWith { mutableListOf(it) }.toMutableMap()
+            while (labeledEdges.size > 2) {
+                val (v1, v2) = labeledEdges.keys.random(random)
+                val contracted = labeledEdges.remove(v1 to v2)!!
+
+            }
+            labeledEdges.forEach { it.logged() }
+        }
+    }
+
+    // hack using yEd
+    val cut = setOf("xbl" to "qqh", "tbq" to "qfj", "xzn" to "dsr")
+
+    val reachable = input.mapValues { (k, v) ->
+        val o = cut.singleOrNull { it.first == k }?.second
+            ?: cut.singleOrNull { it.second == k }?.first
+        if (o != null) v - o
+        else v
+    }
+        .reachable("xbl")
+    return reachable.size * (input.size - reachable.size)
+}
 
 fun part2(input: Input): Any? = null // TODO("part 2 with ${input.toString().length} data")
 
