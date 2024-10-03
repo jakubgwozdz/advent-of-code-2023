@@ -4,7 +4,7 @@
 
 - create `local/cookie` file with content like
 ```properties
-session=5361......b4c6
+session=5361.....b4c6
 ```
 (grab the cookie from DevTools after logging to AoC)
 
